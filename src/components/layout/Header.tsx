@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ROUTES } from '@utils/constants'
+import TeamCall from '../../assets/teamcall.png'
 
 /**
  * Header component with navigation menu
@@ -10,13 +11,13 @@ export function Header(): JSX.Element {
     <header className="border-b border-[#9fbcba] bg-[#cfe6e3]/90 backdrop-blur">
       <nav className="mx-auto flex max-w-6xl px-4 py-4 text-[#1f3c3a]">
         <Link to={ROUTES.HOME} className="flex items-center gap-2 text-xl font-semibold">
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg">
-            TC
-          </span>
-          TeamCall
+          <img
+            src={TeamCall}
+            alt="TeamCall Logo"
+            className="w-50 h-50 sm:w-50 sm:h-10 object-contain"
+          />
         </Link>
       </nav>
     </header>
   )
 }
-
