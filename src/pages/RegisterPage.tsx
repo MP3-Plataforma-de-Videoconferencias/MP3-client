@@ -23,13 +23,11 @@ export function RegisterPage(): JSX.Element {
     e.preventDefault();
     setError('');
 
-    // Validar que las contraseñas coincidan
     if (password !== confirmPassword) {
       setError('Las contraseñas no coinciden');
       return;
     }
 
-    // Validar edad
     const birthDateObj = new Date(birthDate);
     const ageNum = new Date().getFullYear() - birthDateObj.getFullYear();
     if (isNaN(ageNum) || ageNum < 1) {
@@ -58,12 +56,10 @@ export function RegisterPage(): JSX.Element {
         throw new Error(data.error || 'Error al registrarse');
       }
 
-      // Si el backend devuelve un token, hacer login automático
       if (data.token) {
         localStorage.setItem('token', data.token);
-        navigate('/');
+        navigate('/meetings/create');
       } else {
-        // Si no, redirigir al login
         navigate('/login');
       }
     } catch (err) {
@@ -106,7 +102,7 @@ export function RegisterPage(): JSX.Element {
         if (loginResponse.ok) {
           // Usuario ya existe - redirigir al home
           localStorage.setItem('token', loginData.token);
-          navigate('/');
+          navigate('/meetings/create');
           return;
         }
       }
@@ -136,7 +132,7 @@ export function RegisterPage(): JSX.Element {
       
       if (response.ok) {
         localStorage.setItem('token', data.token);
-        navigate('/');
+        navigate('/meetings/create');
       } else {
         throw new Error(data.error || data.message || 'Error al registrarse con Google');
       }
