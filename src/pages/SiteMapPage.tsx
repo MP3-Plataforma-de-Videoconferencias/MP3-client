@@ -1,5 +1,6 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ROUTES } from '@utils/constants'
+import { useAuth } from '@contexts/AuthContext'
 
 /**
  * Site map page component
@@ -7,12 +8,20 @@ import { ROUTES } from '@utils/constants'
  * @returns {JSX.Element} Site map page component
  */
 export function SiteMapPage(): JSX.Element {
+  const { isAuthenticated, isLoading } = useAuth()
+  const navigate = useNavigate()
+
+  function handleCreateClick(): void {
+    if (isLoading) return
+    if (isAuthenticated) navigate(ROUTES.CREATE_MEETING)
+    else navigate(ROUTES.LOGIN, { state: { from: ROUTES.CREATE_MEETING } })
+  }
   const mapSections = [
     {
       title: 'Navegación principal',
       description: 'Secciones públicas del sitio',
       links: [
-        { label: 'Inicio', to: ROUTES.HOME },
+        { label: 'Landing Page', to: ROUTES.HOME },
         { label: 'Acerca de nosotros', to: ROUTES.ABOUT },
         { label: 'Mapa del sitio', to: ROUTES.SITE_MAP },
       ],
@@ -25,13 +34,22 @@ export function SiteMapPage(): JSX.Element {
         { label: 'Registrarse', to: ROUTES.REGISTER },
       ],
     },
+    {
+      title: 'Interacción con reuniones',
+      description: 'Requiere iniciar sesión',
+      links: [
+        { label: 'Crear una reunión', to: ROUTES.CREATE_MEETING },
+        { label: 'Unirse a una reunión', to: ROUTES.CREATE_MEETING },
+        
+      ],
+    },
   ]
 
   return (
-    <div className="page-shell page-shell--wide">
+    <div className="page-shell page-shell--wide" >
       <section className="bubble-panel space-y-6">
         <Link className="back-link" to={ROUTES.HOME}>
-          ← Volver
+          ←
         </Link>
         <div className="text-center space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-[#5a7b79]">Navegación guiada</p>

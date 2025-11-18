@@ -27,7 +27,7 @@ export function AppRouter(): JSX.Element {
         <Route path="forgot-password" element={<ForgotPasswordPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="meetings/create" element={<CreateMeetingPage />} />
-        <Route path="meetings/" element={<MeetingRoomPage />} />
+        <Route path="meetings/:id" element={<MeetingRoomPage />} />
       </Route>
     </Routes>
   )

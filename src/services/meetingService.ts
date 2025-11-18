@@ -1,5 +1,6 @@
 import { apiService } from './api'
-import type { Meeting, CreateMeetingData, ApiResponse } from '@types'
+import type { Meeting, CreatedMeetingResponse, ApiResponse, CreateMeetingData } from '@/types'
+
 
 /**
  * Meeting service for meeting-related API operations
@@ -10,9 +11,10 @@ export const meetingService = {
    * @param data - Meeting creation data
    * @returns Promise with meeting data or error
    */
-  async create(data: CreateMeetingData): Promise<ApiResponse<Meeting>> {
-    return apiService.post<Meeting>('/meetings', data)
-  },
+  async create(): Promise<ApiResponse<CreatedMeetingResponse>> {
+  return apiService.post<CreatedMeetingResponse>('/api/meetings/create')
+},
+
 
   /**
    * Gets a meeting by ID
