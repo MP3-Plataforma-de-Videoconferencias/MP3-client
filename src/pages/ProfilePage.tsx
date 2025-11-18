@@ -1,6 +1,7 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import { ENV } from '../config/env';
 
 interface UserData {
   firstName: string;
@@ -47,7 +48,7 @@ export function ProfilePage(): JSX.Element {
         console.log('Decoded user ID:', userId);
 
         // Usar GET /users/:id según tu API
-        const response = await fetch(`http://localhost:3000/users/${userId}`, {
+        const response = await fetch(`${ENV.API_URL}/users/${userId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -86,7 +87,7 @@ export function ProfilePage(): JSX.Element {
         return;
       }
 
-      const response = await fetch('http://localhost:3000/users/me', {
+      const response = await fetch(`${ENV.API_URL}/users/me`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -134,7 +135,7 @@ export function ProfilePage(): JSX.Element {
         return;
       }
 
-      const response = await fetch('http://localhost:3000/users/me/password', {
+      const response = await fetch(`${ENV.API_URL}/users/me/password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -175,7 +176,7 @@ export function ProfilePage(): JSX.Element {
         return;
       }
 
-      const response = await fetch('http://localhost:3000/users/me', {
+      const response = await fetch(`${ENV.API_URL}/users/me`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

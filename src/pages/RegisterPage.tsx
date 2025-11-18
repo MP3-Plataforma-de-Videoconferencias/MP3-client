@@ -2,6 +2,7 @@ import { useState, FormEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
+import { ENV } from '../config/env'
 
 export function RegisterPage(): JSX.Element {
   const [firstName, setFirstName] = useState('');
@@ -40,7 +41,7 @@ export function RegisterPage(): JSX.Element {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3000/users/register', {
+      const response = await fetch(`${ENV.API_URL}/users/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -86,7 +87,7 @@ export function RegisterPage(): JSX.Element {
         idToken = await result.user.getIdToken();
 
         // Primero intentar hacer login para ver si el usuario ya existe
-        const loginResponse = await fetch('http://localhost:3000/users/loginGoogle', {
+        const loginResponse = await fetch(`${ENV.API_URL}/users/loginGoogle`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -121,7 +122,7 @@ export function RegisterPage(): JSX.Element {
         return;
       }
 
-      const response = await fetch('http://localhost:3000/users/registerGoogle', {
+      const response = await fetch(`${ENV.API_URL}/users/registerGoogle`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

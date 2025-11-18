@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ENV } from '../config/env';
 
 /**
  * Forgot password page component
@@ -19,7 +20,7 @@ export function ForgotPasswordPage(): JSX.Element {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3000/users/request-password-recovery', {
+      const response = await fetch(`${ENV.API_URL}/users/request-password-recovery`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
