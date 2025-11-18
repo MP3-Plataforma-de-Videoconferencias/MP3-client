@@ -16,7 +16,7 @@ export function AboutPage(): JSX.Element {
     <div className="page-shell">
       <section className="bubble-panel space-y-8">
         <Link className="back-link" to={ROUTES.HOME}>
-          ← Volver
+          ←
         </Link>
         <div className="text-center space-y-3">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-[#5a7b79]">Quiénes somos</p>

@@ -44,7 +44,7 @@ export function MeetingRoomPage(): JSX.Element {
       {/* AREA CENTRAL: esta es la única área scrolleable */}
       <div className="meeting-scroll-area">
         <main className="meeting-grid">
-          {[...Array(9)].map((_, i) => (
+          {[...Array(8)].map((_, i) => (
             <div className="user-tile" key={i}>
               <div className="avatar" aria-hidden="true">
                 <svg
@@ -70,7 +70,14 @@ export function MeetingRoomPage(): JSX.Element {
             <p><b>Usuario 1:</b> Buenos días</p>
             <p><b>Usuario 2:</b> Hola</p>
           </div>
-          <input placeholder="Escribir mensaje..." />
+          <div className="chat-input">
+            <input placeholder="Escribir mensaje..." aria-label="Escribir mensaje" />
+            <button className="chat-send" aria-label="Enviar mensaje" title="Enviar">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+              </svg>
+            </button>
+          </div>
         </aside>
       </div>
 

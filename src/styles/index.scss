@@ -165,8 +165,10 @@ body {
 .back-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.5rem;
   font-weight: 600;
+  font-size: 1.5rem; 
+  line-height: 1.2;
   color: var(--color-brand);
   margin-bottom: 1.5rem;
 }

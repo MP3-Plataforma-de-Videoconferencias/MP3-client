@@ -13,7 +13,6 @@
     background: #e0f0f2;
     padding: 1rem;
     box-sizing: border-box;
-    /* no overflow aquí: la zona scrolleable será .meeting-scroll-area */
 }
 
 /* Header (mantiene su tamaño arriba) */
@@ -23,6 +22,11 @@
     border-radius: 8px;
     text-align: center;
     flex: 0 0 auto;
+    /* usar la variable de altura para consistencia y cálculo de offset */
+    height: var(--meeting-header-h);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* ---------------------------------------------
@@ -37,15 +41,13 @@
     min-height: 0;
     /* CRUCIAL para permitir overflow en children flex */
     overflow-y: auto;
-    /* <<=== aquí está el único scroll */
+   
     padding-bottom: calc(var(--meeting-footer-h) + 12px);
-    /* deja espacio para ver todo encima del footer */
+    
     box-sizing: border-box;
 }
 
-/* ---------------------------
-   GRID (panel izquierdo)
-   --------------------------- */
+
 .meeting-grid {
     flex: 1 1 auto;
     margin-top: 1rem;
@@ -55,16 +57,18 @@
     /* CRUCIAL para permitir que el grid use el alto del padre */
     display: grid;
     gap: 12px;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    /* Fuerza 4 columnas por fila sin importar el ancho de la pantalla */
+    grid-template-columns: repeat(4, 1fr);
     align-content: start;
     
-    height: 95%;
-    
-    box-sizing: border-box;
-    padding-right: 8px;
+     /* No forzar altura fija: dejar que el grid respete el padding-bottom
+         para evitar que la última fila quede bajo el footer fijo. */
+     box-sizing: border-box;
+     padding-right: 8px;
+    /* eliminar padding extra: el footer ya estará después del área scrolleable */
+    padding-bottom: 12px;
 }
 
-/* Cada tile de usuario - altura consistente para evitar huecos grandes */
 .user-tile {
     background: #c6c6c6;
     border-radius: 8px;
@@ -118,36 +122,64 @@
 .chat-box {
     flex: 1 1 auto;
     min-height: 0;
-    /* permite overflow */
+    margin-top: 0.5rem;
     overflow-y: auto;
     background: #e8e8e8;
     border-radius: 6px;
     padding: 8px;
     margin-bottom: 8px;
+
+    /* Más espacio entre mensajes */
+    p {
+        margin-bottom: 0.5rem;
+    }
 }
 
-/* Input del chat */
-.meeting-chat input {
+/* Input del chat con botón de enviar dentro del control */
+.meeting-chat .chat-input {
+    position: relative;
+}
+
+.meeting-chat .chat-input input {
     border: 1px solid #ddd;
     border-radius: 6px;
-    padding: 8px;
+    padding: 8px 44px 8px 8px; /* espacio a la derecha para el botón */
     width: 100%;
     box-sizing: border-box;
 }
 
+.meeting-chat .chat-send {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #0ea5a4;
+    border-radius: 6px;
+}
+
+.meeting-chat .chat-send:active {
+    opacity: 0.85;
+}
+
 
 .meeting-footer {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    /* Ahora el footer forma parte del flujo del documento
+       (empuja el contenido en lugar de superponerlo). */
+    position: relative;
     height: var(--meeting-footer-h);
     display: flex;
     justify-content: center;
     gap: 12px;
     align-items: center;
     padding: 12px;
-    z-index: 60;
     background: transparent;
     box-sizing: border-box;
 }
@@ -202,6 +234,7 @@
     }
 
     .meeting-grid {
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        /* En pantallas pequeñas también mantener 4 columnas fijas */
+        grid-template-columns: repeat(4, 1fr);
     }
 }
