@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ROUTES } from '@utils/constants'
 import TeamCall from '../../assets/teamcall.png'
+import "../../styles/header.scss"
 
 /**
  * Header component with navigation menu
@@ -8,8 +9,8 @@ import TeamCall from '../../assets/teamcall.png'
  */
 export function Header(): JSX.Element {
   return (
-    <header className="border-b border-[#9fbcba] bg-[#cfe6e3]/90 backdrop-blur">
-      <nav className="mx-auto flex max-w-6xl px-4 py-4 text-[#1f3c3a]">
+    <header className="navbar">
+      <nav className="navbar__logo">
         <Link to={ROUTES.HOME} className="flex items-center gap-2 text-xl font-semibold">
           <img
             src={TeamCall}
@@ -18,6 +19,14 @@ export function Header(): JSX.Element {
           />
         </Link>
       </nav>
+      {/* Falta cambiar que solo se muestre cuando hay una sesión iniciada */}
+      <button className="navbar__account" aria-label="Mi cuenta">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="navbar__icon">
+          <circle cx="12" cy="7.5" r="3.2" />
+          <path d="M4 19c0-3.314 3.582-6 8-6s8 2.686 8 6v1H4v-1z" />
+        </svg>
+        <span>Mi cuenta</span>
+      </button>
     </header>
   )
 }

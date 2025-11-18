@@ -5,25 +5,35 @@
  * @param meetingId - Meeting ID
  * @returns {JSX.Element} Chat panel component
  */
-export function ChatPanel({ meetingId }: { meetingId: string }): JSX.Element {
-  return (
-    <div className="bg-white shadow-md rounded p-4 h-96 flex flex-col">
-      <h2 className="text-xl font-bold mb-4">Chat</h2>
-      <div className="flex-grow border rounded p-4 mb-4 overflow-y-auto">
-        <p className="text-gray-500 text-center">Chat functionality coming soon</p>
+import React, { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
+
+export function ChatPanel({ meetingId }: { meetingId: string }): JSX.Element | null {
+  const elRef = useRef<HTMLDivElement | null>(null)
+
+  if (!elRef.current) {
+    elRef.current = document.createElement('div')
+  }
+
+  useEffect(() => {
+    const el = elRef.current!
+    document.body.appendChild(el)
+    return () => {
+      if (el.parentNode) el.parentNode.removeChild(el)
+    }
+  }, [])
+
+  const chat = (
+    <div className="meeting-chat" role="complementary" aria-label="Chat grupal">
+      <h4>Chat grupal</h4>
+      <div className="chat-box">
+        <p><b>Salomé:</b> Buenos días</p>
+        <p><b>TeamBot:</b> ¡Hola! 😊 Buenos días</p>
       </div>
-      <div className="flex gap-2">
-        <input
-          type="text"
-          placeholder="Type a message..."
-          disabled
-          className="flex-grow px-4 py-2 border rounded"
-        />
-        <button disabled className="bg-blue-600 text-white px-4 py-2 rounded opacity-50 cursor-not-allowed">
-          Send
-        </button>
-      </div>
+      <input placeholder="Escribir mensaje..." />
     </div>
   )
+
+  return createPortal(chat, elRef.current)
 }
 

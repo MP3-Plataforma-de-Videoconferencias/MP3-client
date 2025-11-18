@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { ROUTES } from '@utils/constants'
 import TeamCall from '../../assets/teamcall.png'
 
@@ -7,8 +7,12 @@ import TeamCall from '../../assets/teamcall.png'
  * @returns {JSX.Element} 
  */
 export function Footer(): JSX.Element {
+  const { pathname } = useLocation()
+
+  // Do not render the site footer on meeting pages (they have their own controls)
+  if (pathname.startsWith('/meetings')) return <></>
   return (
-    <footer className="mt-auto bg-[#cfe6e3] text-[#1f3c3a]">
+    <footer className="site-footer mt-auto bg-[#cfe6e3] text-[#1f3c3a]">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 sm:flex-row sm:items-start sm:justify-between">
         
         <div className="flex flex-col items-center sm:items-start">

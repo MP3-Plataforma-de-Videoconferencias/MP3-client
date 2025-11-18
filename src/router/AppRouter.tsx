@@ -7,7 +7,7 @@ import { ForgotPasswordPage } from '@pages/ForgotPasswordPage'
 import { SiteMapPage } from '@pages/SiteMapPage'
 import { ProfilePage } from '@pages/ProfilePage'
 import { CreateMeetingPage } from '@pages/CreateMeetingPage'
-import { VideoConferencePage } from '@pages/VideoConferencePage'
+import { MeetingRoomPage } from '@/pages/MeetingRoomPage'
 import { MainLayout } from '@components/layout/MainLayout'
 
 /**
@@ -27,7 +27,7 @@ export function AppRouter(): JSX.Element {
         <Route path="forgot-password" element={<ForgotPasswordPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="meetings/create" element={<CreateMeetingPage />} />
-        <Route path="meetings/:id" element={<VideoConferencePage />} />
+        <Route path="meetings/" element={<MeetingRoomPage />} />
       </Route>
     </Routes>
   )

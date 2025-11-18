@@ -1,0 +1,207 @@
+
+:root {
+    --meeting-footer-h: 88px;
+   
+    --meeting-header-h: 64px;
+    
+}
+
+.meeting-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #e0f0f2;
+    padding: 1rem;
+    box-sizing: border-box;
+    /* no overflow aquí: la zona scrolleable será .meeting-scroll-area */
+}
+
+/* Header (mantiene su tamaño arriba) */
+.meeting-header {
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    flex: 0 0 auto;
+}
+
+/* ---------------------------------------------
+   AREA CENTRAL: único contenedor que scrollea
+   --------------------------------------------- */
+.meeting-scroll-area {
+    flex: 1 1 auto;
+    /* ocupa el espacio entre header y footer */
+    display: flex;
+    gap: 1rem;
+    align-items: stretch;
+    min-height: 0;
+    /* CRUCIAL para permitir overflow en children flex */
+    overflow-y: auto;
+    /* <<=== aquí está el único scroll */
+    padding-bottom: calc(var(--meeting-footer-h) + 12px);
+    /* deja espacio para ver todo encima del footer */
+    box-sizing: border-box;
+}
+
+/* ---------------------------
+   GRID (panel izquierdo)
+   --------------------------- */
+.meeting-grid {
+    flex: 1 1 auto;
+    margin-top: 1rem;
+    min-width: 0;
+    /* CRUCIAL para que el grid no obligue al scroll horizontal */
+    min-height: 0;
+    /* CRUCIAL para permitir que el grid use el alto del padre */
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    align-content: start;
+    
+    height: 95%;
+    
+    box-sizing: border-box;
+    padding-right: 8px;
+}
+
+/* Cada tile de usuario - altura consistente para evitar huecos grandes */
+.user-tile {
+    background: #c6c6c6;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    height: 160px;
+    
+    min-height: 140px;
+    box-sizing: border-box;
+}
+
+/* Avatar */
+.avatar {
+    width: clamp(45px, 6.5vw, 72px);
+    height: clamp(45px, 6.5vw, 72px);
+    border: 2px solid black;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+
+    & .avatar__icon {
+        width: 60%;
+        height: 60%;
+    }
+}
+
+.meeting-chat {
+    margin-top: 1rem;
+    width: 320px;
+    max-width: 38vw;
+    flex: 0 0 320px;
+    /* no se encoge, se queda a la derecha */
+    display: flex;
+    flex-direction: column;
+    height: 95%;
+    /* ocupa verticalmente todo el espacio del área central */
+    min-height: 0;
+    /* CRUCIAL para overflow interno */
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    box-sizing: border-box;
+}
+
+.chat-box {
+    flex: 1 1 auto;
+    min-height: 0;
+    /* permite overflow */
+    overflow-y: auto;
+    background: #e8e8e8;
+    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 8px;
+}
+
+/* Input del chat */
+.meeting-chat input {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+
+.meeting-footer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--meeting-footer-h);
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    align-items: center;
+    padding: 12px;
+    z-index: 60;
+    background: transparent;
+    box-sizing: border-box;
+}
+
+.meeting-footer button {
+    width: clamp(40px, 6vw, 56px);
+    height: clamp(40px, 6vw, 56px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #0ea5a4;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.meeting-footer button[aria-label="EndCall"] {
+    background: #ef4444;
+}
+
+/* disabled styling for controls: grayscale + diagonal strike */
+
+.meeting-footer button.off {
+    filter: grayscale(100%);
+}
+
+.meeting-footer button.off::after {
+    content: '';
+    position: absolute;
+    left: -10%;
+    width: 120%;
+    height: 2px;
+    background: rgba(0,0,0,0.8);
+    top: 50%;
+    transform: translateY(-50%) rotate(-45deg);
+    border-radius: 2px;
+}
+
+@media (max-width: 900px) {
+    .meeting-scroll-area {
+        flex-direction: column;
+        padding-bottom: calc(var(--meeting-footer-h) + 18px);
+    }
+
+    .meeting-chat {
+        width: 100%;
+        max-width: 100%;
+        margin-top: 10px;
+        height: auto;
+        
+    }
+
+    .meeting-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    }
+}
