@@ -54,7 +54,6 @@ export function LoginPage(): JSX.Element {
       const data = await response.json();
       
       if (data.status === "incomplete_profile") {
-        // Usuario no existe - redirigir a registro con el email
         navigate('/register', { state: { googleToken: idToken, email: data.email } });
         return;
       }
@@ -62,7 +61,7 @@ export function LoginPage(): JSX.Element {
       if (!response.ok) throw new Error(data.message || 'Error al iniciar sesión con Google');
 
       localStorage.setItem('token', data.token);
-      navigate('/');
+      navigate('/meetings/create');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión con Google');
     } finally {
