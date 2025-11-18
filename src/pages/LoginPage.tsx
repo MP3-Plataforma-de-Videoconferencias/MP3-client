@@ -42,19 +42,24 @@ export function LoginPage(): JSX.Element {
       const result = await signInWithPopup(auth, googleProvider);
       const idToken = await result.user.getIdToken();
 
-      // Enviar el token de Firebase en el header Authorization
       const response = await fetch('http://localhost:3000/users/loginGoogle', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}` // Token de Firebase en el header
+          'Authorization': `Bearer ${idToken}`
         },
       });
 
       const data = await response.json();
+      
+      if (data.status === "incomplete_profile") {
+        // Usuario no existe - redirigir a registro con el email
+        navigate('/register', { state: { googleToken: idToken, email: data.email } });
+        return;
+      }
+      
       if (!response.ok) throw new Error(data.message || 'Error al iniciar sesión con Google');
 
-      // Guardar el token JWT de tu backend
       localStorage.setItem('token', data.token);
       navigate('/');
     } catch (err) {
