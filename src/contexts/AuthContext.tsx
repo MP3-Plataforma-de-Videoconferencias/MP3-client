@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import type { User, AuthProvider } from '@types'
+import type { User, AuthProvider } from '@/types'
 import { userService } from '@services/userService'
 
 interface AuthContextType {
@@ -46,14 +46,14 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
   /**
    * Logs in user with email and password
    */
-  const login = async (email: string, password: string): Promise<void> => {
-    const response = await userService.login({ email, password })
-    if (response.data) {
-      setUser(response.data as User)
-    } else {
-      throw new Error(response.error || 'Login failed')
-    }
+ const login = async (email: string, password: string): Promise<void> => {
+  const response = await userService.login({ email, password })
+  if (response.data) {
+    setUser(response.data.user)
+  } else {
+    throw new Error(response.error || 'Login failed')
   }
+}
 
   /**
    * Logs in user with OAuth provider

@@ -80,3 +80,11 @@ export interface ApiResponse<T> {
   message?: string
 }
 
+/**
+ * Authentication response
+ */
+export interface AuthResponse {
+  user: User
+  token: string
+}
+

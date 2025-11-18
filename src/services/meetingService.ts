@@ -1,5 +1,5 @@
 import { apiService } from './api'
-import type { Meeting, CreateMeetingData, ApiResponse } from '@types'
+import type { Meeting, CreateMeetingData, ApiResponse } from '@/types'
 
 /**
  * Meeting service for meeting-related API operations
@@ -50,4 +50,3 @@ export const meetingService = {
     return apiService.delete<void>(`/meetings/${id}`)
   },
 }
-

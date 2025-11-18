@@ -1,5 +1,5 @@
 import { apiService } from './api'
-import type { User, RegisterData, LoginData, UpdateUserData, ApiResponse } from '@types'
+import type { User, RegisterData, LoginData, UpdateUserData, ApiResponse } from '@/types'
 
 /**
  * User service for user-related API operations
@@ -10,21 +10,22 @@ export const userService = {
    * @param data - User registration data
    * @returns Promise with user data or error
    */
-  async register(data: RegisterData): Promise<ApiResponse<User>> {
-    return apiService.post<User>('/users/register', data)
+  async register(data: RegisterData): Promise<ApiResponse<{ user: User; token: string }>> {
+    const response = await apiService.post<{ user: User; token: string }>('/users/register', data);
+    return response;
   },
 
   /**
    * Logs in a user
    * @param data - User login credentials
-   * @returns Promise with user data or error
+   * @returns Promise with user data and token or error
    */
-  async login(data: LoginData): Promise<ApiResponse<User>> {
+  async login(data: LoginData): Promise<ApiResponse<{ user: User; token: string }>> {
     const response = await apiService.post<{ user: User; token: string }>('/users/login', data)
     if (response.data?.token) {
       localStorage.setItem('authToken', response.data.token)
     }
-    return response as ApiResponse<User>
+    return response
   },
 
   /**
@@ -68,4 +69,3 @@ export const userService = {
     localStorage.removeItem('authToken')
   },
 }
-

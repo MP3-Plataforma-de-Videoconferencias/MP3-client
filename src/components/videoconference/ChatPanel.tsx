@@ -5,10 +5,11 @@
  * @param meetingId - Meeting ID
  * @returns {JSX.Element} Chat panel component
  */
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 
 export function ChatPanel({ meetingId }: { meetingId: string }): JSX.Element | null {
+  console.log('Meeting ID:', meetingId); // Para evitar el error de variable no usada
   const elRef = useRef<HTMLDivElement | null>(null)
 
   if (!elRef.current) {
