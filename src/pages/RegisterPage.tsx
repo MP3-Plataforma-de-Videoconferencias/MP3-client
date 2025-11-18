@@ -18,7 +18,6 @@ export function RegisterPage(): JSX.Element {
   
   // Obtener token de Google si viene del login
   const googleToken = location.state?.googleToken;
-  const googleEmail = location.state?.email;
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();

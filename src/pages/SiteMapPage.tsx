@@ -1,6 +1,5 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link} from 'react-router-dom'
 import { ROUTES } from '@utils/constants'
-import { useAuth } from '@contexts/AuthContext'
 
 /**
  * Site map page component
@@ -8,14 +7,7 @@ import { useAuth } from '@contexts/AuthContext'
  * @returns {JSX.Element} Site map page component
  */
 export function SiteMapPage(): JSX.Element {
-  const { isAuthenticated, isLoading } = useAuth()
-  const navigate = useNavigate()
 
-  function handleCreateClick(): void {
-    if (isLoading) return
-    if (isAuthenticated) navigate(ROUTES.CREATE_MEETING)
-    else navigate(ROUTES.LOGIN, { state: { from: ROUTES.CREATE_MEETING } })
-  }
   const mapSections = [
     {
       title: 'Navegación principal',
