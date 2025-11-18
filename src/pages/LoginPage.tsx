@@ -27,7 +27,7 @@ export function LoginPage(): JSX.Element {
       if (!response.ok) throw new Error(data.message || 'Error al iniciar sesión');
 
       localStorage.setItem('token', data.token);
-      navigate('/');
+      navigate('/meetings/create');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
     } finally {
