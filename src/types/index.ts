@@ -80,3 +80,12 @@ export interface ApiResponse<T> {
   message?: string
 }
 
+/**
+ * Response from /meetings/create
+ */
+export interface CreatedMeetingResponse {
+  ok: boolean;
+  meetingId: string;
+  createdAt: string;
+  message: string;
+}
