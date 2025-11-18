@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ENV } from '../config/env';
 
 export function ResetPasswordPage(): JSX.Element {
   const [password, setPassword] = useState('');
@@ -39,7 +40,7 @@ export function ResetPasswordPage(): JSX.Element {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3000/users/reset-password', {
+      const response = await fetch(`${ENV.API_URL}/users/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

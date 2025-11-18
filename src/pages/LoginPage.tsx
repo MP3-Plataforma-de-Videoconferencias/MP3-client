@@ -2,6 +2,7 @@ import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
+import { ENV } from '../config/env';
 
 export function LoginPage(): JSX.Element {
   const [email, setEmail] = useState('');
@@ -16,7 +17,7 @@ export function LoginPage(): JSX.Element {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3000/users/login', {
+      const response = await fetch(`${ENV.API_URL}/users/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -42,7 +43,7 @@ export function LoginPage(): JSX.Element {
       const result = await signInWithPopup(auth, googleProvider);
       const idToken = await result.user.getIdToken();
 
-      const response = await fetch('http://localhost:3000/users/loginGoogle', {
+      const response = await fetch(`${ENV.API_URL}/users/loginGoogle`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
