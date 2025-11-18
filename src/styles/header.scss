@@ -1,0 +1,40 @@
+$primary: #A9C7C7;
+
+.navbar {
+  width: 100%;
+  background: $primary;
+  padding: 12px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  &__logo {
+    font-size: 1.3rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__account {
+    background: transparent;
+    border: 2px solid #000000;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: smaller;
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    & .navbar__icon {
+      width: 1.25rem;
+      height: 1.25rem;
+      display: inline-block;
+      flex: 0 0 1.25rem;
+    }
+  }
+
+
+}
