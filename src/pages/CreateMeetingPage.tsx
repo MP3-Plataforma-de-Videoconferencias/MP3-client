@@ -3,6 +3,7 @@ import { meetingService } from "@/services/meetingService";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { generateMeetingCode } from '@/utils/meeting'
+import { getUserDisplayName } from '@/utils/auth'
 
 export function CreateMeetingPage(): JSX.Element {
   const navigate = useNavigate();
@@ -10,10 +11,14 @@ export function CreateMeetingPage(): JSX.Element {
 
   const handleCreateMeeting = async () => {
     const generatedCode = generateMeetingCode()
+
+    const email = getUserDisplayName() || "unknown_user";
+
     const meetingPayload = {
       title: `Reunión ${generatedCode}`,
       startTime: new Date().toISOString(),
       roomCode: generatedCode,
+      createdBy: email,
     }
 
     try {

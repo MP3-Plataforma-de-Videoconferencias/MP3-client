@@ -31,9 +31,26 @@ export function MeetingRoomPage(): JSX.Element {
     setCamOn((s) => !s)
   }
 
-  function hangup() {
-    navigate(ROUTES.CREATE_MEETING)
+  async function hangup() {
+  console.log("ID de reunión que estoy enviando:", meetingCode);
+
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/meetings/finish/${meetingCode}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    console.log("Respuesta del servidor:", res.status);
+
+  } catch (error) {
+    console.error("Error al registrar finalización de la reunión:", error);
   }
+
+  navigate(ROUTES.CREATE_MEETING);
+}
+
 
   const getUserDisplayName = (userId: string): string => {
     if (userDirectory[userId]) {

@@ -92,6 +92,12 @@ export function useSocket(
       if (presenceId) {
         socket.emit('newUser', presenceId)
       }
+
+      if (meetingId) {
+      console.log("Joining room:", meetingId);
+      socket.emit("joinRoom", meetingId);
+  }
+
     })
 
     // Disconnection event

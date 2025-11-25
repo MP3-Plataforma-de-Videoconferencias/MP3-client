@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useSocket, type MessageData, type OnlineUser } from '@/hooks/useSocket'
-import { getUserIdFromToken, getUserDisplayName } from '@/utils/auth'
+import { getUserIdFromToken} from '@/utils/auth'
 import { userService } from '@services/userService'
 import type { User } from '@/types'
 
@@ -41,7 +41,7 @@ export function ChatPanel({
 
   // Memoize userId and userDisplayName to avoid recalculating on every render
   const userId = useMemo(() => getUserIdFromToken(), [])
-  const fallbackUserEmail = useMemo(() => getUserDisplayName(), [])
+  
 
   useEffect(() => {
     userNamesRef.current = userNames
@@ -96,14 +96,11 @@ export function ChatPanel({
           console.error('Error loading current user profile:', error)
         }
 
-        if (fallbackUserEmail) {
-          const fallbackName = fallbackUserEmail.split('@')[0]
-          setUserNames((prev) => ({ ...prev, [userId]: fallbackName }))
-          setUsername(fallbackName)
-        }
+        
+
       })()
     }
-  }, [userId, fallbackUserEmail, buildDisplayName])
+  }, [userId, buildDisplayName])
 
   // Ensure we have names for online users
   useEffect(() => {
@@ -155,23 +152,16 @@ export function ChatPanel({
     const senderId = messageData.userId
     const isOwn = senderId === userId
 
-    if (senderId && messageData.username) {
-      setUserNames((prev) => {
-        if (prev[senderId]) {
-          return prev
-        }
-        return { ...prev, [senderId]: messageData.username as string }
-      })
-    } else if (senderId) {
-      void ensureUserName(senderId)
-    }
+    if (senderId) {
+    void ensureUserName(senderId)
+  }
 
-    const displayName =
-      (senderId && userNamesRef.current[senderId]) ||
-      messageData.username ||
-      senderId ||
-      'Usuario'
+  const displayName =
+  (senderId && userNamesRef.current[senderId]) ||
+  'Usuario'
+
     const timestamp = messageData.timestamp || Date.now()
+    
     
     const newMessage: ChatMessage = {
       ...messageData,
@@ -206,10 +196,13 @@ export function ChatPanel({
       return
     }
 
+    
     const messageData: MessageData = {
       message: inputMessage.trim(),
       userId: userId || undefined,
-      username: username,
+      username: userId ? userNames[userId] : username,
+
+
       timestamp: Date.now(),
       roomId: meetingId,
     }
