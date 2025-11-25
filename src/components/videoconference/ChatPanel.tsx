@@ -138,12 +138,20 @@ export function ChatPanel({
 
   // Handle users online update - memoized with useCallback
   const handleUsersOnline = useCallback((users: OnlineUser[]) => {
-    setUsersOnline(users)
-    onUsersOnlineChange?.(users)
-  }, [onUsersOnlineChange])
+    const filteredUsers =
+      meetingId != null
+        ? users.filter((user) => user.meetingId === meetingId)
+        : users
+    setUsersOnline(filteredUsers)
+    onUsersOnlineChange?.(filteredUsers)
+  }, [meetingId, onUsersOnlineChange])
 
   // Handle incoming messages - memoized with useCallback
   const handleReceiveMessage = useCallback((messageData: MessageData) => {
+    if (meetingId && messageData.roomId && messageData.roomId !== meetingId) {
+      return
+    }
+
     const senderId = messageData.userId
     const isOwn = senderId === userId
 
@@ -178,6 +186,7 @@ export function ChatPanel({
   // Initialize socket connection
   const { sendMessage, isConnected } = useSocket(
     userId,
+    meetingId,
     handleUsersOnline,
     handleReceiveMessage
   )

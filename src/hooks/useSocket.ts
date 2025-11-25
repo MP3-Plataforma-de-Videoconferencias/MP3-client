@@ -2,12 +2,34 @@ import { useEffect, useRef, useCallback, useState } from 'react'
 import { io, Socket } from 'socket.io-client'
 import { ENV } from '@/config/env'
 
+const PRESENCE_SEPARATOR = '::'
+
+function buildPresenceIdentifier(meetingId: string | undefined, userId: string | null): string | null {
+  if (!userId) return null
+  if (!meetingId) return userId
+  return `${meetingId}${PRESENCE_SEPARATOR}${userId}`
+}
+
+function parsePresenceIdentifier(identifier: string): { meetingId?: string; actualUserId: string } {
+  const separatorIndex = identifier.indexOf(PRESENCE_SEPARATOR)
+  if (separatorIndex === -1) {
+    return { actualUserId: identifier }
+  }
+
+  return {
+    meetingId: identifier.slice(0, separatorIndex),
+    actualUserId: identifier.slice(separatorIndex + PRESENCE_SEPARATOR.length),
+  }
+}
+
 /**
  * Interface for online user
  */
 export interface OnlineUser {
   socketId: string
   userId: string
+  presenceId: string
+  meetingId?: string
 }
 
 /**
@@ -30,6 +52,7 @@ export interface MessageData {
  */
 export function useSocket(
   userId: string | null,
+  meetingId: string | undefined,
   onUsersOnline?: (users: OnlineUser[]) => void,
   onReceiveMessage?: (messageData: MessageData) => void
 ) {
@@ -65,7 +88,10 @@ export function useSocket(
       setIsConnected(true)
 
       // Emit newUser event when connected
-      socket.emit('newUser', userId)
+      const presenceId = buildPresenceIdentifier(meetingId, userId)
+      if (presenceId) {
+        socket.emit('newUser', presenceId)
+      }
     })
 
     // Disconnection event
@@ -76,9 +102,18 @@ export function useSocket(
     })
 
     // Users online event - use ref to avoid dependency issues
-    socket.on('usersOnline', (users: OnlineUser[]) => {
+    socket.on('usersOnline', (users: { socketId: string; userId: string }[]) => {
       console.log('Users online:', users)
-      callbacksRef.current.onUsersOnline?.(users)
+      const parsedUsers: OnlineUser[] = users.map((user) => {
+        const { meetingId: userMeetingId, actualUserId } = parsePresenceIdentifier(user.userId)
+        return {
+          socketId: user.socketId,
+          presenceId: user.userId,
+          userId: actualUserId,
+          meetingId: userMeetingId,
+        }
+      })
+      callbacksRef.current.onUsersOnline?.(parsedUsers)
     })
 
     // Receive message event - use ref to avoid dependency issues
@@ -102,7 +137,7 @@ export function useSocket(
       isConnectedRef.current = false
       setIsConnected(false)
     }
-  }, [userId]) // Only depend on userId, not callbacks
+  }, [userId, meetingId]) // Only depend on userId/meetingId, not callbacks
 
   /**
    * Send a message through the socket - memoized

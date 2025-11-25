@@ -4,6 +4,7 @@ import { ROUTES } from '@utils/constants'
 import { ChatPanel } from '@components/videoconference/ChatPanel'
 import type { OnlineUser } from '@/hooks/useSocket'
 import { getUserIdFromToken } from '@/utils/auth'
+import { generateMeetingCode } from '@/utils/meeting'
 import "../styles/MeetingRoom.scss";
 
 export function MeetingRoomPage(): JSX.Element {
@@ -13,16 +14,9 @@ export function MeetingRoomPage(): JSX.Element {
   const { id } = useParams();
   const currentUserId = getUserIdFromToken();
 
-  const generateCode = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    const block = () =>
-      Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-
-    return `${block()}-${block()}`;
-  };
   useEffect(() => {
     if (id) setMeetingCode(id);
-    else setMeetingCode(generateCode());
+    else setMeetingCode(generateMeetingCode());
   }, [id]);
 
   const navigate = useNavigate()
