@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ROUTES } from '@utils/constants'
+import { ChatPanel } from '@components/videoconference/ChatPanel'
+import type { OnlineUser } from '@/hooks/useSocket'
+import { getUserIdFromToken } from '@/utils/auth'
 import "../styles/MeetingRoom.scss";
 
 export function MeetingRoomPage(): JSX.Element {
   const [meetingCode, setMeetingCode] = useState("");
+  const [usersOnline, setUsersOnline] = useState<OnlineUser[]>([]);
+  const [userDirectory, setUserDirectory] = useState<Record<string, string>>({});
   const { id } = useParams();
+  const currentUserId = getUserIdFromToken();
 
   const generateCode = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -35,6 +41,32 @@ export function MeetingRoomPage(): JSX.Element {
     navigate(ROUTES.CREATE_MEETING)
   }
 
+  const getUserDisplayName = (userId: string): string => {
+    if (userDirectory[userId]) {
+      return userDirectory[userId]
+    }
+    if (userId.includes('@')) {
+      const name = userId.split('@')[0]
+      return name.charAt(0).toUpperCase() + name.slice(1)
+    }
+    return userId.length > 8 ? `Usuario ${userId.substring(0, 4)}` : `Usuario ${userId}`
+  }
+
+  const getUserInitials = (userId: string): string => {
+    if (userDirectory[userId]) {
+      const parts = userDirectory[userId].split(' ')
+      if (parts.length >= 2) {
+        return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase()
+      }
+      return userDirectory[userId].substring(0, 2).toUpperCase()
+    }
+    if (userId.includes('@')) {
+      const name = userId.split('@')[0]
+      return name.substring(0, 2).toUpperCase()
+    }
+    return userId.substring(0, 2).toUpperCase()
+  }
+
   return (
     <div className="meeting-container">
       <header className="meeting-header">
@@ -44,8 +76,8 @@ export function MeetingRoomPage(): JSX.Element {
       {/* AREA CENTRAL: esta es la única área scrolleable */}
       <div className="meeting-scroll-area">
         <main className="meeting-grid">
-          {[...Array(8)].map((_, i) => (
-            <div className="user-tile" key={i}>
+          {usersOnline.length === 0 ? (
+            <div className="user-tile user-tile--empty">
               <div className="avatar" aria-hidden="true">
                 <svg
                   viewBox="0 0 24 24"
@@ -58,27 +90,47 @@ export function MeetingRoomPage(): JSX.Element {
                   <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-3.866 0-7 1.791-7 4v1h14v-1c0-2.209-3.134-4-7-4z" />
                 </svg>
               </div>
-              <span>Usuario {i + 1}</span>
+              <span>Esperando usuarios...</span>
             </div>
-          ))}
+          ) : (
+            usersOnline.map((user) => {
+              const isCurrentUser = user.userId === currentUserId
+              const displayName = getUserDisplayName(user.userId)
+              const initials = getUserInitials(user.userId)
+              
+              return (
+                <div 
+                  className={`user-tile ${isCurrentUser ? 'user-tile--current' : ''}`}
+                  key={user.socketId}
+                  title={isCurrentUser ? `${displayName} (Tú)` : displayName}
+                >
+                  <div className="avatar" aria-hidden="true">
+                    {isCurrentUser ? (
+                      <div className="avatar-initials avatar-initials--current">
+                        {initials}
+                      </div>
+                    ) : (
+                      <div className="avatar-initials">
+                        {initials}
+                      </div>
+                    )}
+                  </div>
+                  <span>{isCurrentUser ? `${displayName} (Tú)` : displayName}</span>
+                  {isCurrentUser && (
+                    <span className="user-badge" aria-label="Usuario actual">Tú</span>
+                  )}
+                </div>
+              )
+            })
+          )}
         </main>
 
         
-        <aside className="meeting-chat" aria-label="Chat grupal">
-          <h4>Chat grupal</h4>
-          <div className="chat-box">
-            <p><b>Usuario 1:</b> Buenos días</p>
-            <p><b>Usuario 2:</b> Hola</p>
-          </div>
-          <div className="chat-input">
-            <input placeholder="Escribir mensaje..." aria-label="Escribir mensaje" />
-            <button className="chat-send" aria-label="Enviar mensaje" title="Enviar">
-              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
-                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-              </svg>
-            </button>
-          </div>
-        </aside>
+        <ChatPanel 
+          meetingId={meetingCode} 
+          onUsersOnlineChange={setUsersOnline}
+          onUserDirectoryChange={setUserDirectory}
+        />
       </div>
 
       
