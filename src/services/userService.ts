@@ -43,6 +43,15 @@ export const userService = {
   },
 
   /**
+   * Gets user information by ID
+   * @param userId - User ID
+   * @returns Promise with user data or error
+   */
+  async getById(userId: string): Promise<ApiResponse<User>> {
+    return apiService.get<User>(`/users/${userId}`)
+  },
+
+  /**
    * Updates user profile
    * @param data - User data to update
    * @returns Promise with updated user data or error

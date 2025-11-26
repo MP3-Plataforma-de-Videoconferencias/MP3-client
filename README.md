@@ -44,6 +44,7 @@ MP3-client/
 - User profile management
 - Meeting creation and management
 - Video conference platform (UI only)
+- **Real-time chat with Socket.IO** - Live messaging during meetings
 - Responsive design
 - WCAG accessibility guidelines
 - Usability heuristics implementation
@@ -94,7 +95,8 @@ npm run preview
 
 ## Environment Variables
 
-- `VITE_API_BASE_URL` - Backend API base URL
+- `VITE_API_URL` - Backend API base URL (default: `http://localhost:3000`)
+- `VITE_SOCKET_URL` - Socket.IO server URL (default: `http://localhost:3000`)
 - `VITE_GOOGLE_CLIENT_ID` - Google OAuth client ID
 - `VITE_FACEBOOK_APP_ID` - Facebook OAuth app ID
 - `VITE_ENV` - Environment (development/production)
