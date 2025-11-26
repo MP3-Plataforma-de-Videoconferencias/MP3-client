@@ -11,9 +11,9 @@ export const meetingService = {
    * @param data - Meeting creation data
    * @returns Promise with meeting data or error
    */
-  async create(): Promise<ApiResponse<CreatedMeetingResponse>> {
-  return apiService.post<CreatedMeetingResponse>('/api/meetings/create')
-},
+  async create(data?: Partial<CreateMeetingData>): Promise<ApiResponse<CreatedMeetingResponse>> {
+    return apiService.post<CreatedMeetingResponse>('/api/meetings/create', data)
+  },
 
 
   /**
