@@ -11,7 +11,7 @@ interface UserData {
 }
 
 interface JWTPayload {
-  userId: string;  // Cambiar de 'id' a 'userId'
+  userId: string;  
   email: string;
   iat: number;
   exp: number;
