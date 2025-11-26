@@ -196,10 +196,6 @@ export function ProfilePage(): JSX.Element {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
-  };
 
   return (
   <div className="min-h-screen flex justify-center bg-gray-100 px-4 py-8">
