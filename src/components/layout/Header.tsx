@@ -30,7 +30,7 @@ export function Header(): JSX.Element {
   return (
     <header className="navbar">
       <nav className="navbar__logo">
-        <Link to={ROUTES.HOME} className="flex items-center gap-2 text-xl font-semibold">
+        <Link to={ROUTES.CREATE_MEETING} className="flex items-center gap-2 text-xl font-semibold">
           <img
             src={TeamCall}
             alt="TeamCall Logo"
