@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
 import { ENV } from '../config/env'
+import googleLogo from '../assets/google-color.svg';
 
 export function RegisterPage(): JSX.Element {
   const [firstName, setFirstName] = useState('');
@@ -344,7 +345,7 @@ export function RegisterPage(): JSX.Element {
                   disabled={isLoading}
                   className="flex items-center justify-center gap-2 border rounded-lg py-2 hover:bg-gray-100 transition disabled:opacity-50"
                 >
-                  <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="google" className="w-5" />
+                  <img src={googleLogo} alt="google" className="w-5" />
                   Google
                 </button>
 
