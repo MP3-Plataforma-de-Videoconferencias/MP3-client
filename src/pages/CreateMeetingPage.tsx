@@ -2,27 +2,40 @@ import "../styles/CreateMeetingPage.scss";
 import { meetingService } from "@/services/meetingService";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { generateMeetingCode } from '@/utils/meeting'
+import { getUserDisplayName } from '@/utils/auth'
 
 export function CreateMeetingPage(): JSX.Element {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   const handleCreateMeeting = async () => {
+    const generatedCode = generateMeetingCode()
+
+    const email = getUserDisplayName() || "unknown_user";
+
+    const meetingPayload = {
+      title: `Reunión ${generatedCode}`,
+      startTime: new Date().toISOString(),
+      roomCode: generatedCode,
+      createdBy: email,
+    }
+
     try {
       setLoading(true);
 
-    const response = await meetingService.create();
+      const response = await meetingService.create(meetingPayload);
 
-    if (response.data?.ok && response.data?.meetingId) {
-      const id = response.data.meetingId;
-      navigate(`/meetings/${id}`);
-    } else {
-      alert("Error al crear la reunión");
-    }
-
+      const serverMeetingId = response.data?.meetingId
+      if (serverMeetingId && serverMeetingId !== generatedCode) {
+        navigate(`/meetings/${serverMeetingId}`);
+      } else {
+        navigate(`/meetings/${generatedCode}`);
+      }
     } catch (error) {
       console.error(error);
-      alert("Error al crear la reunión");
+      // En caso de error con el servidor, aún podemos usar el código generado localmente
+      navigate(`/meetings/${generatedCode}`);
     } finally {
       setLoading(false);
     }

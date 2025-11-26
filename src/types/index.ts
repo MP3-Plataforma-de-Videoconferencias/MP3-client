@@ -64,6 +64,7 @@ export interface CreateMeetingData {
   description?: string
   startTime: string
   endTime?: string
+  roomCode?: string
 }
 
 /**
