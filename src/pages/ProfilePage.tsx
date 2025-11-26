@@ -198,43 +198,42 @@ export function ProfilePage(): JSX.Element {
 
 
   return (
-  <div className="min-h-screen flex justify-center bg-gray-100 px-4 py-8">
-    <div className="bg-white w-full max-w-xl rounded-2xl shadow-xl p-8 relative">
+  <div className="min-h-screen flex justify-center bg-gray-100 px-4 py-8" aria-label="Página de perfil del usuario">
+    <div className="bg-white w-full max-w-xl rounded-2xl shadow-xl p-8 relative" aria-label="Formulario de perfil">
 
       {/* Back Arrow */}
       <button
         onClick={() => navigate(-1)}
         className="absolute top-4 left-4 p-2 text-gray-600 hover:text-gray-900"
-        aria-label="Volver"
+        aria-label="Volver a la página anterior"
       >
         <span className="material-symbols-outlined">arrow_back</span>
       </button>
 
       {/* Título */}
-      <div className="text-center mb-6">
+      <div className="text-center mb-6" aria-label="Encabezado de perfil">
         <h1 className="text-2xl font-semibold">Editar perfil</h1>
         <p className="text-gray-600 mt-2">Edita tu información personal</p>
       </div>
 
       {/* Mensajes */}
       {error && (
-        <div className="text-red-700 bg-red-100 p-3 rounded-md text-sm mb-4">
+        <div className="text-red-700 bg-red-100 p-3 rounded-md text-sm mb-4" aria-live="assertive" aria-label="Mensaje de error">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="text-green-700 bg-green-100 p-3 rounded-md text-sm mb-4">
+        <div className="text-green-700 bg-green-100 p-3 rounded-md text-sm mb-4" aria-live="polite" aria-label="Mensaje de éxito">
           {success}
         </div>
       )}
 
       {/* FORMULARIO PRINCIPAL */}
-      <form onSubmit={handleUpdateProfile} className="space-y-5">
-
+      <form onSubmit={handleUpdateProfile} className="space-y-5" aria-label="Formulario para actualizar perfil">
         {/* Nombre */}
         <div>
-          <label htmlFor="firstName" className="text-sm font-medium block mb-1">
+          <label htmlFor="firstName" className="text-sm font-medium block mb-1" aria-label="Nombre">
             Nombre
           </label>
           <div className="relative">
@@ -254,7 +253,7 @@ export function ProfilePage(): JSX.Element {
 
         {/* Apellido */}
         <div>
-          <label htmlFor="lastName" className="text-sm font-medium block mb-1">
+          <label htmlFor="lastName" className="text-sm font-medium block mb-1" aria-label="Apellido">
             Apellido
           </label>
           <div className="relative">
@@ -274,7 +273,7 @@ export function ProfilePage(): JSX.Element {
 
         {/* Edad */}
         <div>
-          <label htmlFor="age" className="text-sm font-medium block mb-1">
+          <label htmlFor="age" className="text-sm font-medium block mb-1" aria-label="Edad">
             Edad
           </label>
           <div className="relative">
@@ -295,7 +294,7 @@ export function ProfilePage(): JSX.Element {
 
         {/* Email */}
         <div>
-          <label htmlFor="email" className="text-sm font-medium block mb-1">
+          <label htmlFor="email" className="text-sm font-medium block mb-1" aria-label="Correo electrónico">
             Correo electrónico
           </label>
           <div className="relative">
@@ -329,12 +328,13 @@ export function ProfilePage(): JSX.Element {
         type="button"
         onClick={() => setShowPasswordModal(true)}
         className="w-full py-2 text-blue-600 hover:underline text-sm mt-4"
+        aria-label="Botón para cambiar contraseña"
       >
         Cambiar contraseña
       </button>
 
       {/* ELIMINAR CUENTA */}
-      <div className="border rounded-lg p-4 mt-6">
+      <div className="border rounded-lg p-4 mt-6" aria-label="Sección para eliminar cuenta">
         <h3 className="font-medium mb-2 flex items-center gap-2">
           <span className="material-symbols-outlined text-red-600">warning</span>
           Eliminar cuenta
@@ -345,6 +345,7 @@ export function ProfilePage(): JSX.Element {
         <button
           onClick={() => setShowDeleteModal(true)}
           className="w-full py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-50 transition"
+          aria-label="Botón para eliminar cuenta"
         >
           Eliminar cuenta
         </button>
