@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { ROUTES } from '@utils/constants'
 import TeamCall from '../../assets/teamcall.png'
@@ -10,12 +10,13 @@ import "../../styles/header.scss"
  */
 export function Header(): JSX.Element {
   const navigate = useNavigate()
+  const location = useLocation()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('token')
     setIsLoggedIn(!!token)
-  }, [])
+  }, [location])
 
   const handleLogout = () => {
     localStorage.removeItem('token')
