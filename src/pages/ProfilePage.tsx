@@ -202,155 +202,159 @@ export function ProfilePage(): JSX.Element {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-8">
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl p-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold">Editar perfil</h1>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-100 transition"
-          >
-            <span className="material-symbols-outlined text-sm">logout</span>
-            Cerrar sesión
-          </button>
+  <div className="min-h-screen flex justify-center bg-gray-100 px-4 py-8">
+    <div className="bg-white w-full max-w-xl rounded-2xl shadow-xl p-8 relative">
+
+      {/* Back Arrow */}
+      <button
+        onClick={() => navigate(-1)}
+        className="absolute top-4 left-4 p-2 text-gray-600 hover:text-gray-900"
+        aria-label="Volver"
+      >
+        <span className="material-symbols-outlined">arrow_back</span>
+      </button>
+
+      {/* Título */}
+      <div className="text-center mb-6">
+        <h1 className="text-2xl font-semibold">Editar perfil</h1>
+        <p className="text-gray-600 mt-2">Edita tu información personal</p>
+      </div>
+
+      {/* Mensajes */}
+      {error && (
+        <div className="text-red-700 bg-red-100 p-3 rounded-md text-sm mb-4">
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="text-green-700 bg-green-100 p-3 rounded-md text-sm mb-4">
+          {success}
+        </div>
+      )}
+
+      {/* FORMULARIO PRINCIPAL */}
+      <form onSubmit={handleUpdateProfile} className="space-y-5">
+
+        {/* Nombre */}
+        <div>
+          <label htmlFor="firstName" className="text-sm font-medium block mb-1">
+            Nombre
+          </label>
+          <div className="relative">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+              person
+            </span>
+            <input
+              id="firstName"
+              type="text"
+              value={userData.firstName}
+              onChange={(e) => setUserData({ ...userData, firstName: e.target.value })}
+              required
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            />
+          </div>
         </div>
 
-        <p className="text-gray-600 mb-6">Edita tu información personal</p>
-
-        {error && (
-          <div className="text-red-700 bg-red-100 p-3 rounded-md text-sm mb-4">
-            {error}
+        {/* Apellido */}
+        <div>
+          <label htmlFor="lastName" className="text-sm font-medium block mb-1">
+            Apellido
+          </label>
+          <div className="relative">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+              badge
+            </span>
+            <input
+              id="lastName"
+              type="text"
+              value={userData.lastName}
+              onChange={(e) => setUserData({ ...userData, lastName: e.target.value })}
+              required
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            />
           </div>
-        )}
+        </div>
 
-        {success && (
-          <div className="text-green-700 bg-green-100 p-3 rounded-md text-sm mb-4">
-            {success}
+        {/* Edad */}
+        <div>
+          <label htmlFor="age" className="text-sm font-medium block mb-1">
+            Edad
+          </label>
+          <div className="relative">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+              calendar_today
+            </span>
+            <input
+              id="age"
+              type="number"
+              min="1"
+              value={userData.age}
+              onChange={(e) => setUserData({ ...userData, age: e.target.value })}
+              required
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            />
           </div>
-        )}
+        </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Left Column - Profile Form */}
-          <div>
-            <form onSubmit={handleUpdateProfile} className="space-y-4">
-              {/* First Name */}
-              <div>
-                <label htmlFor="firstName" className="text-sm font-medium block mb-1">
-                  Nombre
-                </label>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                    person
-                  </span>
-                  <input
-                    id="firstName"
-                    type="text"
-                    value={userData.firstName}
-                    onChange={(e) => setUserData({ ...userData, firstName: e.target.value })}
-                    required
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Last Name */}
-              <div>
-                <label htmlFor="lastName" className="text-sm font-medium block mb-1">
-                  Apellido
-                </label>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                    badge
-                  </span>
-                  <input
-                    id="lastName"
-                    type="text"
-                    value={userData.lastName}
-                    onChange={(e) => setUserData({ ...userData, lastName: e.target.value })}
-                    required
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Age */}
-              <div>
-                <label htmlFor="age" className="text-sm font-medium block mb-1">
-                  Edad
-                </label>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                    calendar_today
-                  </span>
-                  <input
-                    id="age"
-                    type="number"
-                    min="1"
-                    value={userData.age}
-                    onChange={(e) => setUserData({ ...userData, age: e.target.value })}
-                    required
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Email */}
-              <div>
-                <label htmlFor="email" className="text-sm font-medium block mb-1">
-                  Correo electrónico
-                </label>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                    mail
-                  </span>
-                  <input
-                    id="email"
-                    type="email"
-                    value={userData.email}
-                    onChange={(e) => setUserData({ ...userData, email: e.target.value })}
-                    required
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className={`w-full py-3 rounded-lg text-black text-center font-medium transition
-                ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#cfe6e3]/70 hover:bg-[#cfe6e3]/100'}`}
-              >
-                {isLoading ? 'Guardando...' : 'Guardar'}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowPasswordModal(true)}
-                className="w-full py-2 text-blue-600 hover:underline text-sm"
-              >
-                Cambiar contraseña
-              </button>
-            </form>
+        {/* Email */}
+        <div>
+          <label htmlFor="email" className="text-sm font-medium block mb-1">
+            Correo electrónico
+          </label>
+          <div className="relative">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+              mail
+            </span>
+            <input
+              id="email"
+              type="email"
+              value={userData.email}
+              onChange={(e) => setUserData({ ...userData, email: e.target.value })}
+              required
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            />
           </div>
+        </div>
 
-          {/* Right Column - Actions */}
-          <div className="space-y-4">
-            <div className="border rounded-lg p-4">
-              <h3 className="font-medium mb-2 flex items-center gap-2">
-                <span className="material-symbols-outlined text-red-600">warning</span>
-                Eliminar cuenta
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Al eliminar tu cuenta, se eliminarán permanentemente todos tus datos. Esta acción no se puede deshacer.
-              </p>
-              <button
-                onClick={() => setShowDeleteModal(true)}
-                className="w-full py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-              >
-                Eliminar cuenta
-              </button>
-            </div>
-          </div>
+        {/* Botón guardar */}
+        <button
+          type="submit"
+          disabled={isLoading}
+          className={`w-full py-3 rounded-lg text-black font-medium transition
+          ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#cfe6e3]/70 hover:bg-[#cfe6e3]/100'}`}
+        >
+          {isLoading ? 'Guardando...' : 'Guardar cambios'}
+        </button>
+      </form>
+
+      {/* CAMBIAR CONTRASEÑA */}
+      <button
+        type="button"
+        onClick={() => setShowPasswordModal(true)}
+        className="w-full py-2 text-blue-600 hover:underline text-sm mt-4"
+      >
+        Cambiar contraseña
+      </button>
+
+      {/* ELIMINAR CUENTA */}
+      <div className="border rounded-lg p-4 mt-6">
+        <h3 className="font-medium mb-2 flex items-center gap-2">
+          <span className="material-symbols-outlined text-red-600">warning</span>
+          Eliminar cuenta
+        </h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Esta acción eliminará permanentemente todos tus datos.
+        </p>
+        <button
+          onClick={() => setShowDeleteModal(true)}
+          className="w-full py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-50 transition"
+        >
+          Eliminar cuenta
+        </button>
+      </div>
+          
+                   
         </div>
 
         {/* Delete Confirmation Modal */}
@@ -446,6 +450,6 @@ export function ProfilePage(): JSX.Element {
           </div>
         )}
       </div>
-    </div>
+    
   );
 }
