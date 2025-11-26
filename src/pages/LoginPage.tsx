@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
 import { ENV } from '../config/env';
+import googleLogo from '../assets/google-color.svg';
 
 export function LoginPage(): JSX.Element {
   const [email, setEmail] = useState('');
