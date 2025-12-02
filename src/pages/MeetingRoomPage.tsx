@@ -7,7 +7,6 @@ import { useSocket } from '@/hooks/useSocket'
 import { getUserIdFromToken } from '@/utils/auth'
 import { generateMeetingCode } from '@/utils/meeting'
 import { useWebRTC } from '@/hooks/useWebRTC'
-import { meetingService } from '@/services/meetingService'
 // @ts-ignore - webrtc.js is a JavaScript file
 import { connectToPeer, getSocketId, setExternalSocket } from '../../webrtc.js'
 import "../styles/MeetingRoom.scss";
@@ -18,7 +17,7 @@ export function MeetingRoomPage(): JSX.Element {
   const [userDirectory, setUserDirectory] = useState<Record<string, string>>({});
   const { id } = useParams();
   const currentUserId = getUserIdFromToken();
-  const { remoteStreams, isReady, setMicEnabled, setVideoEnabled, endCall } = useWebRTC();
+  const { remoteStreams, isReady, setMicEnabled, setVideoEnabled } = useWebRTC();
   
   // Obtener el socket del chat para usarlo también en WebRTC
   const { socket: chatSocket } = useSocket(
@@ -85,22 +84,24 @@ export function MeetingRoomPage(): JSX.Element {
   }
 
   async function hangup() {
-    console.log("ID de reunión que estoy enviando:", meetingCode);
+  console.log("ID de reunión que estoy enviando:", meetingCode);
 
-    try {
-      const response = await meetingService.finish(meetingCode);
-      if (response.error) {
-        console.error("Error al registrar finalización de la reunión:", response.error);
-      } else {
-        console.log("Reunión finalizada correctamente");
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/meetings/finish/${meetingCode}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json"
       }
-    } catch (error) {
-      console.error("Error al registrar finalización de la reunión:", error);
-    }
+    });
 
-    endCall()
-    navigate(ROUTES.CREATE_MEETING);
+    console.log("Respuesta del servidor:", res.status);
+
+  } catch (error) {
+    console.error("Error al registrar finalización de la reunión:", error);
   }
+
+  navigate(ROUTES.CREATE_MEETING);
+}
 
 
   const getUserDisplayName = (userId: string): string => {
@@ -138,7 +139,7 @@ export function MeetingRoomPage(): JSX.Element {
         </span>
         {Object.keys(remoteStreams).length > 0 && (
           <span className="remote-audio-status" title={`${Object.keys(remoteStreams).length} conexión(es) de audio activa(s)`}>
-            🔊 {Object.keys(remoteStreams).length} audio(s)
+            {Object.keys(remoteStreams).length} audio(s)
           </span>
         )}
       </header>
@@ -192,7 +193,7 @@ export function MeetingRoomPage(): JSX.Element {
                   )}
                   {!isCurrentUser && audioStreamCount > 0 && (
                     <span className="audio-indicator" title="Audio activo" aria-label="Audio activo">
-                      🔊
+                      (Audio activo)
                     </span>
                   )}
                 </div>
