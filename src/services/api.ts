@@ -71,6 +71,25 @@ class ApiService {
   }
 
   /**
+   * Makes a PATCH request
+   * @param endpoint - API endpoint
+   * @param data - Request body data
+   * @param options - Fetch options
+   * @returns Promise with API response
+   */
+  async patch<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: 'PATCH',
+      body: data ? JSON.stringify(data) : undefined,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers,
+      },
+    })
+  }
+
+  /**
    * Base request method
    * @param endpoint - API endpoint
    * @param options - Fetch options
