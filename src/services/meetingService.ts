@@ -22,7 +22,7 @@ export const meetingService = {
    * @returns Promise with meeting data or error
    */
   async getById(id: string): Promise<ApiResponse<Meeting>> {
-    return apiService.get<Meeting>(`/meetings/${id}`)
+    return apiService.get<Meeting>(`/api/meetings/${id}`)
   },
 
   /**
@@ -30,7 +30,7 @@ export const meetingService = {
    * @returns Promise with meetings array or error
    */
   async getAll(): Promise<ApiResponse<Meeting[]>> {
-    return apiService.get<Meeting[]>('/meetings')
+    return apiService.get<Meeting[]>('/api/meetings')
   },
 
   /**
@@ -40,7 +40,7 @@ export const meetingService = {
    * @returns Promise with updated meeting data or error
    */
   async update(id: string, data: Partial<CreateMeetingData>): Promise<ApiResponse<Meeting>> {
-    return apiService.put<Meeting>(`/meetings/${id}`, data)
+    return apiService.put<Meeting>(`/api/meetings/${id}`, data)
   },
 
   /**
@@ -49,7 +49,16 @@ export const meetingService = {
    * @returns Promise with success or error
    */
   async delete(id: string): Promise<ApiResponse<void>> {
-    return apiService.delete<void>(`/meetings/${id}`)
+    return apiService.delete<void>(`/api/meetings/${id}`)
+  },
+
+  /**
+   * Marks a meeting as finished
+   * @param id - Meeting ID
+   * @returns Promise with success or error
+   */
+  async finish(id: string): Promise<ApiResponse<void>> {
+    return apiService.patch<void>(`/api/meetings/finish/${id}`)
   },
 }
 

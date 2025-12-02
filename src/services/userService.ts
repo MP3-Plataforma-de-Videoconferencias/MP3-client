@@ -1,5 +1,6 @@
 import { apiService } from './api'
 import type { User, RegisterData, LoginData, UpdateUserData, ApiResponse } from '@/types'
+import { getUserIdFromToken } from '@/utils/auth'
 
 /**
  * User service for user-related API operations
@@ -39,7 +40,11 @@ export const userService = {
    * @returns Promise with user data or error
    */
   async getProfile(): Promise<ApiResponse<User>> {
-    return apiService.get<User>('/users/profile')
+    const userId = getUserIdFromToken()
+    if (!userId) {
+      return { error: 'User ID not found in token' }
+    }
+    return apiService.get<User>(`/users/${userId}`)
   },
 
   /**
@@ -57,7 +62,7 @@ export const userService = {
    * @returns Promise with updated user data or error
    */
   async updateProfile(data: UpdateUserData): Promise<ApiResponse<User>> {
-    return apiService.put<User>('/users/profile', data)
+    return apiService.put<User>('/users/me', data)
   },
 
   /**
@@ -65,7 +70,7 @@ export const userService = {
    * @returns Promise with success or error
    */
   async deleteAccount(): Promise<ApiResponse<void>> {
-    return apiService.delete<void>('/users/profile')
+    return apiService.delete<void>('/users/me')
   },
 
   /**
@@ -74,7 +79,7 @@ export const userService = {
    * @returns Promise with success or error
    */
   async recoverPassword(email: string): Promise<ApiResponse<void>> {
-    return apiService.post<void>('/users/recover-password', { email })
+    return apiService.post<void>('/users/request-password-recovery', { email })
   },
 
   /**

@@ -96,10 +96,21 @@ npm run preview
 ## Environment Variables
 
 - `VITE_API_URL` - Backend API base URL (default: `http://localhost:3000`)
-- `VITE_SOCKET_URL` - Socket.IO server URL (default: `http://localhost:3000`)
-- `VITE_GOOGLE_CLIENT_ID` - Google OAuth client ID
-- `VITE_FACEBOOK_APP_ID` - Facebook OAuth app ID
+- `VITE_SOCKET_URL` - Socket.IO server URL for chat and presence (default: `http://localhost:3000`)
+- `VITE_VOICE_SERVER_URL` - Voice/WebRTC ICE config server (default: `http://localhost:4000`)
+  - Provides ICE server configuration for WebRTC peer-to-peer connections
+  - Endpoints: `/health` (health check) and `/api/ice-config` (ICE configuration)
+- `VITE_WEBRTC_URL` - WebRTC signaling server URL (default: `http://localhost:3000`)
+  - Handles WebRTC signaling (SDP exchange, ICE candidates) for peer connections
+- `VITE_GOOGLE_CLIENT_ID` - Google OAuth client ID (optional)
+- `VITE_FACEBOOK_APP_ID` - Facebook OAuth app ID (optional)
 - `VITE_ENV` - Environment (development/production)
+
+### Voice server integration
+
+The WebRTC client verifies the voice server health endpoint and retrieves ICE configuration from `${VITE_VOICE_SERVER_URL}/api/ice-config` before establishing peer connections. Ensure your frontend origin is included in the voice server `ORIGIN` allow-list for CORS.
+
+**Important:** Create a `.env` file in the project root with these variables. You can use `.env.example` as a template (if available) or copy the variables listed above.
 
 ## Code Style
 
