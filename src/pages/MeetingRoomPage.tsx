@@ -8,7 +8,7 @@ import { getUserIdFromToken } from "@/utils/auth";
 import { generateMeetingCode } from "@/utils/meeting";
 import { useWebRTC } from "@/hooks/useWebRTC";
 // @ts-ignore - webrtc.js is a JavaScript file
-import { connectToPeer, getSocketId, setExternalSocket } from "../../webrtc.js";
+import { getSocketId, setExternalSocket } from '../../webrtc.js'
 import "../styles/MeetingRoom.scss";
 import { userService } from "@services/userService";
 import type { User } from "@/types";
@@ -105,15 +105,8 @@ export function MeetingRoomPage(): JSX.Element {
     // Conectar con cada usuario online que no sea nosotros
     usersOnline.forEach((user) => {
       if (user.socketId !== mySocketId) {
-        console.log(
-          `[MeetingRoom Debug] Attempting to connect to peer: ${user.socketId}`
-        );
-        connectToPeer(user.socketId).catch((error: unknown) => {
-          console.error(
-            `[MeetingRoom Debug] Error connecting to peer ${user.socketId}:`,
-            error
-          );
-        });
+        console.log(`[MeetingRoom Debug] Attempting to connect to peer: ${user.socketId}`);
+        
       }
     });
   }, [usersOnline, isReady]);
@@ -499,13 +492,16 @@ function AudioBridge({
   // Log de estado del audio
   useEffect(() => {
     if (isPlaying && hasAudio) {
-      console.log(
-        `[Audio Debug] ✅ Peer ${peerId} - Audio activo y reproduciéndose`
-      );
+      console.log(`[Audio Debug] (ok) Peer ${peerId} - Audio activo y reproduciéndose`)
     }
   }, [isPlaying, hasAudio, peerId]);
 
   return (
-    <audio ref={audioRef} autoPlay playsInline style={{ display: "none" }} />
-  );
+    <audio 
+      ref={audioRef} 
+      autoPlay 
+      playsInline 
+      style={{ display: 'none' }}
+    />
+  )
 }
