@@ -39,24 +39,35 @@ function notifyLocalStream() {
   });
 }
 
+/**
+ * Subscribes to changes in remote streams.
+ * @param {Function} callback - Callback function to handle remote stream updates.
+ * @returns {Function} Unsubscribe function to remove the callback.
+ */
 export function onRemoteStreamsChange(callback) {
   remoteStreamSubscribers.add(callback);
   callback({ ...remoteStreams });
   return () => remoteStreamSubscribers.delete(callback);
 }
 
+/**
+ * Subscribes to changes in the local media stream.
+ * @param {Function} callback - Callback function to handle local stream updates.
+ * @returns {Function} Unsubscribe function to remove the callback.
+ */
 export function onLocalStreamChange(callback) {
   localStreamSubscribers.add(callback);
   callback(localMediaStream);
   return () => localStreamSubscribers.delete(callback);
 }
 
-// Getter para React
+/**
+ * Gets the current remote streams.
+ * @returns {Record<string, MediaStream>} A snapshot of the remote streams.
+ */
 export function getRemoteStreams() {
   return { ...remoteStreams };
 }
-
-
 
 /**
  * Gets the current socket ID
@@ -132,6 +143,9 @@ export const initWebRTC = async () => {
   }
 };
 
+/**
+ * Destroys the WebRTC connection and cleans up resources.
+ */
 export function destroyWebRTC() {
   Object.values(peers).forEach((peer) => {
     if (peer?.peerConnection?.destroy) {
