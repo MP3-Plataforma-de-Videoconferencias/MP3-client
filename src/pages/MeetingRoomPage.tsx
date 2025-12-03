@@ -15,6 +15,7 @@ export function MeetingRoomPage(): JSX.Element {
   const [meetingCode, setMeetingCode] = useState("");
   const [usersOnline, setUsersOnline] = useState<OnlineUser[]>([]);
   const [userDirectory, setUserDirectory] = useState<Record<string, string>>({});
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const { id } = useParams();
   const currentUserId = getUserIdFromToken();
   const { remoteStreams, isReady, setMicEnabled, setVideoEnabled } = useWebRTC();
@@ -132,17 +133,8 @@ export function MeetingRoomPage(): JSX.Element {
     <div className="meeting-container">
       <header className="meeting-header">
         <strong>Código de la reunión:</strong> {meetingCode}
-        <span className={`media-status ${isReady ? 'media-status--ready' : 'media-status--loading'}`}>
-          {isReady ? 'Audio conectado' : 'Conectando audio...'}
-        </span>
-        {Object.keys(remoteStreams).length > 0 && (
-          <span className="remote-audio-status" title={`${Object.keys(remoteStreams).length} conexión(es) de audio activa(s)`}>
-            {Object.keys(remoteStreams).length} audio(s)
-          </span>
-        )}
       </header>
 
-      {/* AREA CENTRAL: esta es la única área scrolleable */}
       <div className="meeting-scroll-area">
         <main className="meeting-grid">
           {usersOnline.length === 0 ? (
@@ -206,6 +198,8 @@ export function MeetingRoomPage(): JSX.Element {
           meetingId={meetingCode} 
           onUsersOnlineChange={setUsersOnline}
           onUserDirectoryChange={setUserDirectory}
+          isOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
         />
       </div>
 
@@ -235,6 +229,19 @@ export function MeetingRoomPage(): JSX.Element {
             <path d="M4 7h3l2-2h6l2 2h3v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7zM12 9a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />
           </svg>
         </button>
+
+        {window.innerWidth < 1024 && (
+          <button 
+            aria-label="Chat"
+            onClick={() => setIsChatOpen(!isChatOpen)}
+            className={isChatOpen ? 'active' : ''}
+            title={isChatOpen ? 'Cerrar chat' : 'Abrir chat'}
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true">
+              <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+            </svg>
+          </button>
+        )}
 
         <button aria-label="EndCall" onClick={hangup} title="Colgar">
           <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true">
