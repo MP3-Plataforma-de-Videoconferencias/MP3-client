@@ -212,38 +212,40 @@ export function ChatPanel({
   }, [inputMessage, isConnected, userId, username, meetingId, sendMessage])
 
   return (
-    <aside className="meeting-chat" aria-label="Chat grupal">
-      <div className="chat-header">
-        <h4>Chat grupal</h4>
-        <div className="chat-status">
+    <aside className="meeting-chat flex flex-col h-full w-full" aria-label="Chat grupal">
+      <div className="chat-header p-3 border-b flex items-center justify-between">
+        <h4 className="text-sm font-medium">Chat grupal</h4>
+        <div className="chat-status flex items-center gap-2">
           <span
-            className={`status-indicator ${isConnected ? 'connected' : 'disconnected'}`}
+            className={`status-indicator inline-block w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-400'}`}
             title={isConnected ? 'Conectado' : 'Desconectado'}
             aria-label={isConnected ? 'Conectado' : 'Desconectado'}
           />
-          <span className="users-count" aria-live="polite">
-            {usersOnline.length} {usersOnline.length === 1 ? 'usuario' : 'usuarios'} conectado{usersOnline.length === 1 ? '' : 's'}
+          <span className="users-count text-xs text-gray-600" aria-live="polite">
+            {usersOnline.length} {usersOnline.length === 1 ? 'usuario' : 'usuarios'}
           </span>
         </div>
       </div>
 
-      <div className="chat-box" ref={chatBoxRef}>
+      <div className="chat-box p-3 overflow-auto flex-1 space-y-3" ref={chatBoxRef}>
         {messages.map((msg, index) => (
           <div
             key={index}
-            className={`chat-message ${msg.isOwn ? 'own-message' : 'other-message'}`}
+            className={`chat-message max-w-full break-words ${msg.isOwn ? 'self-end text-right' : 'self-start'}`}
           >
-            <div className="message-header">
-              <span className="message-username">{msg.displayName}</span>
-              <span className="message-time">{msg.formattedTime}</span>
+            <div className="message-header flex items-center justify-between text-xs text-gray-500">
+              <span className="message-username font-medium">{msg.displayName}</span>
+              <span className="message-time ml-2">{msg.formattedTime}</span>
             </div>
-            <p className="message-content">{msg.message}</p>
+            <p className={`message-content mt-1 inline-block px-3 py-2 rounded-lg ${msg.isOwn ? 'bg-[#cfe6e3] text-black' : 'bg-gray-100 text-gray-800'}`}>
+              {msg.message}
+            </p>
           </div>
         ))}
         <div ref={messagesEndRef} />
       </div>
 
-      <form className="chat-input" onSubmit={handleSendMessage}>
+      <form className="chat-input p-3 border-t flex gap-2 items-center" onSubmit={handleSendMessage}>
         <input
           type="text"
           placeholder={isConnected ? "Escribir mensaje..." : "Conectando..."}
@@ -251,22 +253,16 @@ export function ChatPanel({
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
           disabled={!isConnected}
-          className={!isConnected ? 'disabled' : ''}
+          className="flex-1 px-3 py-2 border rounded-md text-sm disabled:opacity-60"
         />
         <button
           type="submit"
-          className="chat-send"
+          className="chat-send flex items-center justify-center px-4 py-3 bg-[#cfe6e3] rounded-md text-lg disabled:opacity-50 min-w-[48px] min-h-[48px]"
           aria-label="Enviar mensaje"
           title="Enviar"
           disabled={!isConnected || !inputMessage.trim()}
         >
-          <svg
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            width="18"
-            height="18"
-            aria-hidden="true"
-          >
+          <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24" aria-hidden="true" className="block">
             <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
           </svg>
         </button>
