@@ -199,20 +199,11 @@ export function MeetingRoomPage(): JSX.Element {
 
         <div className="flex items-center gap-2">
           <button
-            className="md:hidden px-3 py-1 bg-[#cfe6e3] rounded-lg text-sm"
+            className="md:hidden px-4 py-1 bg-[#cfe6e3] rounded-lg text-sm"
             onClick={() => setIsChatOpen(true)}
             aria-label="Abrir chat"
           >
             Chat
-          </button>
-
-          <button
-            aria-label="EndCall"
-            onClick={hangup}
-            title="Colgar"
-            className="px-3 py-1 bg-red-500 text-white rounded-md"
-          >
-            Colgar
           </button>
         </div>
       </header>
