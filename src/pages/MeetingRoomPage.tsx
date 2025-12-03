@@ -8,7 +8,7 @@ import { getUserIdFromToken } from '@/utils/auth'
 import { generateMeetingCode } from '@/utils/meeting'
 import { useWebRTC } from '@/hooks/useWebRTC'
 // @ts-ignore - webrtc.js is a JavaScript file
-import { connectToPeer, getSocketId, setExternalSocket } from '../../webrtc.js'
+import { getSocketId, setExternalSocket } from '../../webrtc.js'
 import "../styles/MeetingRoom.scss";
 
 export function MeetingRoomPage(): JSX.Element {
@@ -68,9 +68,7 @@ export function MeetingRoomPage(): JSX.Element {
     usersOnline.forEach((user) => {
       if (user.socketId !== mySocketId) {
         console.log(`[MeetingRoom Debug] Attempting to connect to peer: ${user.socketId}`);
-        connectToPeer(user.socketId).catch((error: unknown) => {
-          console.error(`[MeetingRoom Debug] Error connecting to peer ${user.socketId}:`, error);
-        });
+        
       }
     });
   }, [usersOnline, isReady]);
