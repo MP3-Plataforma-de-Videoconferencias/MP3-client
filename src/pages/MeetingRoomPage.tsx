@@ -8,7 +8,7 @@ import { getUserIdFromToken } from '@/utils/auth'
 import { generateMeetingCode } from '@/utils/meeting'
 import { useWebRTC } from '@/hooks/useWebRTC'
 // @ts-ignore - webrtc.js is a JavaScript file
-import { getSocketId, setExternalSocket } from '../../webrtc.js'
+import { getSocketId, setExternalSocket, getLocalMediaStream } from '../../webrtc.js'
 import "../styles/MeetingRoom.scss";
 
 export function MeetingRoomPage(): JSX.Element {
@@ -159,6 +159,7 @@ export function MeetingRoomPage(): JSX.Element {
               const displayName = getUserDisplayName(user.userId)
               const initials = getUserInitials(user.userId)
               const audioStreamCount = Object.keys(remoteStreams).length
+              const hasRemoteVideo = !isCurrentUser && remoteStreams[user.socketId]
               
               return (
                 <div 
@@ -166,17 +167,21 @@ export function MeetingRoomPage(): JSX.Element {
                   key={user.socketId}
                   title={isCurrentUser ? `${displayName} (Tú)` : displayName}
                 >
-                  <div className="avatar" aria-hidden="true">
-                    {isCurrentUser ? (
-                      <div className="avatar-initials avatar-initials--current">
-                        {initials}
-                      </div>
-                    ) : (
+                  {isCurrentUser ? (
+                    <LocalVideoPlayer displayName={displayName} initials={initials} />
+                  ) : hasRemoteVideo ? (
+                    <RemoteVideoPlayer 
+                      stream={remoteStreams[user.socketId]} 
+                      displayName={displayName} 
+                      initials={initials}
+                    />
+                  ) : (
+                    <div className="avatar" aria-hidden="true">
                       <div className="avatar-initials">
                         {initials}
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                   <span>{isCurrentUser ? `${displayName} (Tú)` : displayName}</span>
                   {isCurrentUser && (
                     <span className="user-badge" aria-label="Usuario actual">Tú</span>
@@ -249,6 +254,91 @@ export function MeetingRoomPage(): JSX.Element {
           </svg>
         </button>
       </footer>
+    </div>
+  );
+}
+
+// Componente para video local
+function LocalVideoPlayer({ displayName, initials }: { displayName: string; initials: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [hasVideo, setHasVideo] = useState(false);
+
+  useEffect(() => {
+    const localStream = getLocalMediaStream();
+    if (videoRef.current && localStream) {
+      videoRef.current.srcObject = localStream;
+      const videoTracks = localStream.getVideoTracks();
+      setHasVideo(videoTracks.length > 0 && videoTracks.some(t => t.enabled));
+    }
+  }, []);
+
+  return (
+    <div className="video-container">
+      {hasVideo ? (
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="user-video user-video--local"
+          aria-label={`Video de ${displayName}`}
+        />
+      ) : (
+        <div className="avatar" aria-hidden="true">
+          <div className="avatar-initials avatar-initials--current">
+            {initials}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Componente para video remoto
+function RemoteVideoPlayer({ 
+  stream, 
+  displayName, 
+  initials 
+}: { 
+  stream: MediaStream; 
+  displayName: string; 
+  initials: string;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [hasVideo, setHasVideo] = useState(false);
+
+  useEffect(() => {
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+      const videoTracks = stream.getVideoTracks();
+      setHasVideo(videoTracks.length > 0 && videoTracks.some(t => t.enabled && !t.muted));
+
+      const playPromise = videoRef.current.play();
+      if (playPromise) {
+        playPromise.catch((error) => {
+          console.error(`Unable to autoplay video for ${displayName}:`, error);
+        });
+      }
+    }
+  }, [stream, displayName]);
+
+  return (
+    <div className="video-container">
+      {hasVideo ? (
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          className="user-video"
+          aria-label={`Video de ${displayName}`}
+        />
+      ) : (
+        <div className="avatar" aria-hidden="true">
+          <div className="avatar-initials">
+            {initials}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

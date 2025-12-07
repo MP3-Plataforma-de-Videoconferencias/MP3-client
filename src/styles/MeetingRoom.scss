@@ -148,6 +148,26 @@
     font-weight: 600;
 }
 
+// Estilos para video
+.video-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #1a1a1a;
+}
+
+.user-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    
+    &--local {
+        transform: scaleX(-1); // Efecto espejo para video local
+    }
+}
 /* Avatar */
 .avatar {
     width: clamp(45px, 6.5vw, 72px);

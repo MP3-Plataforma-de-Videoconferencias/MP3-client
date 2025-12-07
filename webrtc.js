@@ -170,8 +170,15 @@ export function destroyWebRTC() {
  */
 async function getMedia() {
   try {
-    // Solo audio: evita errores cuando la cámara no está disponible
-    return await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    // Audio y video para videoconferencia completa
+    return await navigator.mediaDevices.getUserMedia({ 
+      audio: true, 
+      video: {
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        facingMode: 'user'
+      }
+    });
   } catch (err) {
     console.error("Failed to get user media:", err);
     throw err;
