@@ -1,4 +1,4 @@
-import Peer from "simple-peer";
+import Peer from "simple-peer/simplepeer.min.js";
 import io from "socket.io-client";
 
 // URLs and credentials for WebRTC and ICE servers
@@ -162,8 +162,7 @@ export function destroyWebRTC() {
 
 /**
  * Gets the user's media stream.
- * Para este proyecto solo necesitamos AUDIO, por lo que
- * pedimos únicamente audio y evitamos depender de la cámara.
+ * Solicita audio y video para videoconferencia completa.
  * @async
  * @function getMedia
  * @returns {Promise<MediaStream>} The user's media stream.
@@ -171,14 +170,7 @@ export function destroyWebRTC() {
 async function getMedia() {
   try {
     // Audio y video para videoconferencia completa
-    return await navigator.mediaDevices.getUserMedia({ 
-      audio: true, 
-      video: {
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-        facingMode: 'user'
-      }
-    });
+    return await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
   } catch (err) {
     console.error("Failed to get user media:", err);
     throw err;
