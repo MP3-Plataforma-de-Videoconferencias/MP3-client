@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ROUTES } from '@utils/constants'
 import { ChatPanel } from '@components/videoconference/ChatPanel'
@@ -18,8 +18,8 @@ export function MeetingRoomPage(): JSX.Element {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { id } = useParams();
   const currentUserId = getUserIdFromToken();
-  const { remoteStreams, isReady, setMicEnabled, setVideoEnabled } = useWebRTC();
-
+  const { localStream, remoteStreams, isReady, setMicEnabled, setVideoEnabled } = useWebRTC();
+  
   // Obtener el socket del chat para usarlo también en WebRTC
   const { socket: chatSocket } = useSocket(
     currentUserId,
@@ -52,6 +52,70 @@ export function MeetingRoomPage(): JSX.Element {
       setExternalSocket(chatSocket);
     }
   }, [chatSocket]);
+
+  // Crear un mapeo de usuarios a streams remotos
+  // Esto asegura que cada usuario se mapee correctamente con su stream
+  // Nota: Los socketIds del chat pueden no coincidir con los socketIds de WebRTC,
+  // por lo que hacemos un mapeo más flexible
+  const userStreamMap = useMemo(() => {
+    const map = new Map<string, MediaStream>()
+    const remoteUsers = usersOnline.filter(u => u.userId !== currentUserId)
+    const streamEntries = Object.entries(remoteStreams)
+    const streamsArray = streamEntries.map(([_, stream]) => stream)
+    
+    // Primero intentar mapear por socketId exacto (caso ideal)
+    remoteUsers.forEach(user => {
+      const stream = remoteStreams[user.socketId]
+      if (stream) {
+        map.set(user.socketId, stream)
+      }
+    })
+    
+    // Si hay usuarios sin mapear y streams disponibles, mapearlos
+    const mappedStreams = new Set(Array.from(map.values()))
+    const unmappedUsers = remoteUsers.filter(u => !map.has(u.socketId))
+    const unmappedStreams = streamsArray.filter(stream => !mappedStreams.has(stream))
+    
+    // Mapear usuarios sin stream con streams disponibles
+    // Esto maneja el caso donde los socketIds no coinciden exactamente
+    unmappedUsers.forEach((user, index) => {
+      if (index < unmappedStreams.length) {
+        map.set(user.socketId, unmappedStreams[index])
+        console.log(`[Video Debug] Mapped user ${user.socketId} (${user.userId}) to stream ${unmappedStreams[index].id}`)
+      }
+    })
+    
+    return map
+  }, [usersOnline, remoteStreams, currentUserId])
+
+  // Debug: mostrar información de streams y usuarios
+  useEffect(() => {
+    const mySocketId = getSocketId();
+    console.log('[Video Debug] ========== STREAMS DEBUG ==========')
+    console.log('[Video Debug] My WebRTC socketId:', mySocketId)
+    console.log('[Video Debug] Users online:', usersOnline.map(u => ({
+      socketId: u.socketId,
+      userId: u.userId,
+      isCurrent: u.userId === currentUserId
+    })))
+    console.log('[Video Debug] Remote streams keys:', Object.keys(remoteStreams))
+    console.log('[Video Debug] Remote streams details:', Object.entries(remoteStreams).map(([peerId, stream]) => ({
+      peerId,
+      hasVideo: stream.getVideoTracks().length > 0,
+      hasAudio: stream.getAudioTracks().length > 0,
+      videoEnabled: stream.getVideoTracks().some(t => t.enabled)
+    })))
+    console.log('[Video Debug] User-Stream map:', Array.from(userStreamMap.entries()).map(([socketId, stream]) => ({
+      socketId,
+      hasVideo: stream.getVideoTracks().length > 0,
+      hasAudio: stream.getAudioTracks().length > 0
+    })))
+    console.log('[Video Debug] Local stream:', localStream ? {
+      hasVideo: localStream.getVideoTracks().length > 0,
+      hasAudio: localStream.getAudioTracks().length > 0
+    } : 'null')
+    console.log('[Video Debug] ====================================')
+  }, [usersOnline, remoteStreams, localStream, currentUserId, userStreamMap])
 
   // Conectar con otros usuarios cuando aparecen online (solo si WebRTC está listo)
   useEffect(() => {
@@ -210,7 +274,38 @@ const getUserInitials = (userId: string): string => {
               const isCurrentUser = user.userId === currentUserId
               const displayName = getUserDisplayName(user.userId)
               const initials = getUserInitials(user.userId)
-              const audioStreamCount = Object.keys(remoteStreams).length
+              // const audioStreamCount = Object.keys(remoteStreams).length
+              
+              // Obtener el stream de video correspondiente
+              // Para el usuario actual, usar localStream
+              // Para otros usuarios, usar el mapeo userStreamMap
+              let videoStream = null
+              if (isCurrentUser) {
+                videoStream = localStream
+              } else {
+                // Intentar obtener del mapeo
+                videoStream = userStreamMap.get(user.socketId)
+                
+                // Si no está en el mapeo, intentar buscar directamente por socketId
+                if (!videoStream) {
+                  videoStream = remoteStreams[user.socketId]
+                }
+                
+                // Si aún no se encuentra y hay streams disponibles, usar el primero disponible
+                // Esto es un fallback para casos donde el mapeo no funcionó
+                if (!videoStream && Object.keys(remoteStreams).length > 0) {
+                  const availableStreams = Object.values(remoteStreams).filter(
+                    stream => stream.getVideoTracks().length > 0
+                  )
+                  if (availableStreams.length > 0) {
+                    // Si solo hay un stream disponible y un usuario remoto, usarlo
+                    const remoteUsersCount = usersOnline.filter(u => u.userId !== currentUserId).length
+                    if (remoteUsersCount === 1 && availableStreams.length === 1) {
+                      videoStream = availableStreams[0]
+                    }
+                  }
+                }
+              }
               
               return (
                 <div 
@@ -218,25 +313,33 @@ const getUserInitials = (userId: string): string => {
                   key={user.socketId}
                   title={isCurrentUser ? `${displayName} (Tú)` : displayName}
                 >
-                  <div className="avatar" aria-hidden="true">
-                    {isCurrentUser ? (
-                      <div className="avatar-initials avatar-initials--current">
-                        {initials}
+                  {videoStream && videoStream.getVideoTracks().length > 0 ? (
+                    <div className="video-container">
+                      <VideoPlayer 
+                        stream={videoStream} 
+                        isLocal={isCurrentUser}
+                        displayName={displayName}
+                      />
+                      <div className="video-name-overlay">
+                        {isCurrentUser ? `${displayName} (Tú)` : displayName}
                       </div>
-                    ) : (
-                      <div className="avatar-initials">
-                        {initials}
-                      </div>
-                    )}
-                  </div>
-                  <span>{isCurrentUser ? `${displayName} (Tú)` : displayName}</span>
+                    </div>
+                  ) : (
+                    <div className="avatar" aria-hidden="true">
+                      {isCurrentUser ? (
+                        <div className="avatar-initials avatar-initials--current">
+                          {initials}
+                        </div>
+                      ) : (
+                        <div className="avatar-initials">
+                          {initials}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {!videoStream && <span>{isCurrentUser ? `${displayName} (Tú)` : displayName}</span>}
                   {isCurrentUser && (
                     <span className="user-badge" aria-label="Usuario actual">Tú</span>
-                  )}
-                  {!isCurrentUser && audioStreamCount > 0 && (
-                    <span className="audio-indicator" title="Audio activo" aria-label="Audio activo">
-                      (Audio activo)
-                    </span>
                   )}
                 </div>
               )
@@ -303,6 +406,108 @@ const getUserInitials = (userId: string): string => {
       </footer>
     </div>
   );
+}
+
+function VideoPlayer({ stream, isLocal, displayName }: { stream: MediaStream; isLocal: boolean; displayName: string }) {
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const [hasActiveVideo, setHasActiveVideo] = useState(false)
+
+  useEffect(() => {
+    if (!stream) {
+      setHasActiveVideo(false)
+      return
+    }
+
+    // Verificar si hay video tracks activos
+    const checkVideoTracks = () => {
+      const videoTracks = stream.getVideoTracks()
+      const hasActive = videoTracks.length > 0 && videoTracks.some(track => track.enabled)
+      console.log(`[VideoPlayer] ${displayName} - hasActiveVideo:`, hasActive, 'tracks:', videoTracks.map(t => ({ enabled: t.enabled, readyState: t.readyState })))
+      setHasActiveVideo(hasActive)
+    }
+
+    checkVideoTracks()
+
+    // Monitorear cambios en los tracks
+    const videoTracks = stream.getVideoTracks()
+    const handleTrackChange = () => {
+      console.log(`[VideoPlayer] Track changed for ${displayName}`)
+      checkVideoTracks()
+    }
+    
+    videoTracks.forEach(track => {
+      track.addEventListener('ended', handleTrackChange)
+      track.addEventListener('mute', handleTrackChange)
+      track.addEventListener('unmute', handleTrackChange)
+    })
+
+    // Intervalo para verificar periódicamente
+    const interval = setInterval(checkVideoTracks, 500)
+
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream
+      videoRef.current.muted = isLocal
+      videoRef.current.playsInline = true
+      
+      const playPromise = videoRef.current.play()
+      if (playPromise) {
+        playPromise.catch((error) => {
+          console.error(`[Video Debug] Unable to play video stream:`, error)
+        })
+      }
+    }
+
+    return () => {
+      clearInterval(interval)
+      videoTracks.forEach(track => {
+        track.removeEventListener('ended', handleTrackChange)
+        track.removeEventListener('mute', handleTrackChange)
+        track.removeEventListener('unmute', handleTrackChange)
+      })
+      if (videoRef.current) {
+        videoRef.current.srcObject = null
+      }
+    }
+  }, [stream, isLocal, displayName])
+
+  // Obtener iniciales para el avatar
+  const getInitials = (name: string): string => {
+    const parts = name.replace(' (Tú)', '').split(' ')
+    if (parts.length >= 2) {
+      return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase()
+    }
+    return name.substring(0, 2).toUpperCase()
+  }
+
+  return (
+    <>
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        className="user-tile__video"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          borderRadius: '8px',
+          display: hasActiveVideo ? 'block' : 'none',
+          background: '#000'
+        }}
+        aria-label={`Video de ${displayName}`}
+      />
+      {!hasActiveVideo && (
+        <div className="avatar" aria-hidden="true">
+          <div className="avatar-initials">
+            {getInitials(displayName)}
+          </div>
+        </div>
+      )}
+    </>
+  )
 }
 
 function RemoteAudioPlayers({ streams }: { streams: Record<string, MediaStream> }) {
@@ -427,3 +632,4 @@ function AudioBridge({ peerId, stream }: { peerId: string; stream: MediaStream }
     />
   )
 }
+

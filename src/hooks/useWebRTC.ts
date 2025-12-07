@@ -37,7 +37,9 @@ export function useWebRTC(options: UseWebRTCOptions = {}) {
 
     if (autoStart) {
       Promise.resolve(initWebRTC())
-        .then(() => setIsReady(true))
+        .then(() => {
+          setIsReady(true);
+        })
         .catch((error: unknown) => {
           console.error('Failed to initialize WebRTC', error)
           setIsReady(false)

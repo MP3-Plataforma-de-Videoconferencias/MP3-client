@@ -162,16 +162,15 @@ export function destroyWebRTC() {
 
 /**
  * Gets the user's media stream.
- * Para este proyecto solo necesitamos AUDIO, por lo que
- * pedimos únicamente audio y evitamos depender de la cámara.
+ * Solicita audio y video para videoconferencia completa.
  * @async
  * @function getMedia
  * @returns {Promise<MediaStream>} The user's media stream.
  */
 async function getMedia() {
   try {
-    // Solo audio: evita errores cuando la cámara no está disponible
-    return await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    // Audio y video para videoconferencia completa
+    return await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
   } catch (err) {
     console.error("Failed to get user media:", err);
     throw err;
