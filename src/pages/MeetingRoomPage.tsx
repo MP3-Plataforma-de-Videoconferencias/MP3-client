@@ -262,11 +262,16 @@ export function MeetingRoomPage(): JSX.Element {
                   title={isCurrentUser ? `${displayName} (Tú)` : displayName}
                 >
                   {videoStream && videoStream.getVideoTracks().length > 0 ? (
-                    <VideoPlayer 
-                      stream={videoStream} 
-                      isLocal={isCurrentUser}
-                      displayName={displayName}
-                    />
+                    <div className="video-container">
+                      <VideoPlayer 
+                        stream={videoStream} 
+                        isLocal={isCurrentUser}
+                        displayName={displayName}
+                      />
+                      <div className="video-name-overlay">
+                        {isCurrentUser ? `${displayName} (Tú)` : displayName}
+                      </div>
+                    </div>
                   ) : (
                     <div className="avatar" aria-hidden="true">
                       {isCurrentUser ? (
@@ -280,14 +285,9 @@ export function MeetingRoomPage(): JSX.Element {
                       )}
                     </div>
                   )}
-                  <span>{isCurrentUser ? `${displayName} (Tú)` : displayName}</span>
+                  {!videoStream && <span>{isCurrentUser ? `${displayName} (Tú)` : displayName}</span>}
                   {isCurrentUser && (
                     <span className="user-badge" aria-label="Usuario actual">Tú</span>
-                  )}
-                  {!isCurrentUser && audioStreamCount > 0 && (
-                    <span className="audio-indicator" title="Audio activo" aria-label="Audio activo">
-                      (Audio activo)
-                    </span>
                   )}
                 </div>
               )
@@ -358,11 +358,43 @@ export function MeetingRoomPage(): JSX.Element {
 
 function VideoPlayer({ stream, isLocal, displayName }: { stream: MediaStream; isLocal: boolean; displayName: string }) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
+  const [hasActiveVideo, setHasActiveVideo] = useState(false)
 
   useEffect(() => {
+    if (!stream) {
+      setHasActiveVideo(false)
+      return
+    }
+
+    // Verificar si hay video tracks activos
+    const checkVideoTracks = () => {
+      const videoTracks = stream.getVideoTracks()
+      const hasActive = videoTracks.length > 0 && videoTracks.some(track => track.enabled)
+      console.log(`[VideoPlayer] ${displayName} - hasActiveVideo:`, hasActive, 'tracks:', videoTracks.map(t => ({ enabled: t.enabled, readyState: t.readyState })))
+      setHasActiveVideo(hasActive)
+    }
+
+    checkVideoTracks()
+
+    // Monitorear cambios en los tracks
+    const videoTracks = stream.getVideoTracks()
+    const handleTrackChange = () => {
+      console.log(`[VideoPlayer] Track changed for ${displayName}`)
+      checkVideoTracks()
+    }
+    
+    videoTracks.forEach(track => {
+      track.addEventListener('ended', handleTrackChange)
+      track.addEventListener('mute', handleTrackChange)
+      track.addEventListener('unmute', handleTrackChange)
+    })
+
+    // Intervalo para verificar periódicamente
+    const interval = setInterval(checkVideoTracks, 500)
+
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream
-      videoRef.current.muted = isLocal // Silenciar el video local para evitar feedback
+      videoRef.current.muted = isLocal
       videoRef.current.playsInline = true
       
       const playPromise = videoRef.current.play()
@@ -374,26 +406,55 @@ function VideoPlayer({ stream, isLocal, displayName }: { stream: MediaStream; is
     }
 
     return () => {
+      clearInterval(interval)
+      videoTracks.forEach(track => {
+        track.removeEventListener('ended', handleTrackChange)
+        track.removeEventListener('mute', handleTrackChange)
+        track.removeEventListener('unmute', handleTrackChange)
+      })
       if (videoRef.current) {
         videoRef.current.srcObject = null
       }
     }
-  }, [stream, isLocal])
+  }, [stream, isLocal, displayName])
+
+  // Obtener iniciales para el avatar
+  const getInitials = (name: string): string => {
+    const parts = name.replace(' (Tú)', '').split(' ')
+    if (parts.length >= 2) {
+      return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase()
+    }
+    return name.substring(0, 2).toUpperCase()
+  }
 
   return (
-    <video
-      ref={videoRef}
-      autoPlay
-      playsInline
-      className="user-tile__video"
-      style={{
-        width: '100%',
-        height: '100%',
-        objectFit: 'cover',
-        borderRadius: '8px',
-      }}
-      aria-label={`Video de ${displayName}`}
-    />
+    <>
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        className="user-tile__video"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          borderRadius: '8px',
+          display: hasActiveVideo ? 'block' : 'none',
+          background: '#000'
+        }}
+        aria-label={`Video de ${displayName}`}
+      />
+      {!hasActiveVideo && (
+        <div className="avatar" aria-hidden="true">
+          <div className="avatar-initials">
+            {getInitials(displayName)}
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 
