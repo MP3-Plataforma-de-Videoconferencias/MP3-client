@@ -19,7 +19,7 @@ export function MeetingRoomPage(): JSX.Element {
   const { id } = useParams();
   const currentUserId = getUserIdFromToken();
   const { remoteStreams, isReady, setMicEnabled, setVideoEnabled } = useWebRTC();
-  
+
   // Obtener el socket del chat para usarlo también en WebRTC
   const { socket: chatSocket } = useSocket(
     currentUserId,
@@ -58,7 +58,6 @@ export function MeetingRoomPage(): JSX.Element {
     if (!isReady) {
       return;
     }
-
     const mySocketId = getSocketId();
     if (!mySocketId) {
       console.log('[MeetingRoom Debug] Waiting for WebRTC socket ID...');
@@ -74,6 +73,55 @@ export function MeetingRoomPage(): JSX.Element {
     });
   }, [usersOnline, isReady]);
 
+  useEffect(() => {
+  if (!meetingCode) return;
+
+  fetch(`${import.meta.env.VITE_API_URL}/api/participants/${meetingCode}`)
+    .then(res => res.json())
+    .then((participants: { userId: string; name: string }[]) => {
+      const onlineUsers: OnlineUser[] = participants.map(p => ({
+        userId: p.userId,
+        socketId: '',
+        presenceId: p.userId, 
+      }));
+      setUsersOnline(onlineUsers);
+
+      const directory: Record<string, string> = {};
+      participants.forEach(p => {
+        if (p.name) directory[p.userId] = p.name;
+      });
+      setUserDirectory(directory);
+    })
+    .catch(err => console.error('Error fetching participants:', err));
+}, [meetingCode]);
+
+useEffect(() => {
+  if (!currentUserId || !meetingCode) return;
+
+  fetch(`${import.meta.env.VITE_API_URL}/users/${currentUserId}`)
+    .then(res => res.json())
+    .then(userData => {
+  
+      localStorage.setItem('userEmail', userData.email);
+
+      const participant = {
+        meetingId: meetingCode,
+        userId: currentUserId,
+        name: `${userData.firstName} ${userData.lastName}`,
+        email: userData.email,
+      };
+
+      fetch(`${import.meta.env.VITE_API_URL}/api/participants/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(participant),
+      })
+      .then(() => console.log('Participant registered:', participant))
+      .catch(err => console.error('Error registering participant:', err));
+    });
+}, [currentUserId, meetingCode]);
+
+
   function toggleMic() {
     setMicOn((s) => !s)
   }
@@ -82,53 +130,57 @@ export function MeetingRoomPage(): JSX.Element {
     setCamOn((s) => !s)
   }
 
-  async function hangup() {
-  console.log("ID de reunión que estoy enviando:", meetingCode);
+async function hangup() {
+  if (!meetingCode) return;
 
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/meetings/finish/${meetingCode}`, {
+    console.log("Finalizando reunión:", meetingCode);
+
+    await fetch(`${import.meta.env.VITE_API_URL}/api/meetings/finish/${meetingCode}`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json"
-      }
+      headers: { "Content-Type": "application/json" },
     });
 
-    console.log("Respuesta del servidor:", res.status);
+    
+    await fetch(`${import.meta.env.VITE_API_URL}/api/participants/finish/${meetingCode}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: localStorage.getItem('userEmail') }),
+    });
 
-  } catch (error) {
-    console.error("Error al registrar finalización de la reunión:", error);
+    console.log("Correo de resumen enviado al participante que finalizó.");
+
+    navigate(ROUTES.CREATE_MEETING);
+  } catch (err) {
+    console.error("Error al finalizar la reunión:", err);
   }
-
-  navigate(ROUTES.CREATE_MEETING);
 }
 
-
-  const getUserDisplayName = (userId: string): string => {
-    if (userDirectory[userId]) {
-      return userDirectory[userId]
-    }
-    if (userId.includes('@')) {
-      const name = userId.split('@')[0]
-      return name.charAt(0).toUpperCase() + name.slice(1)
-    }
-    return userId.length > 8 ? `Usuario ${userId.substring(0, 4)}` : `Usuario ${userId}`
+const getUserDisplayName = (userId: string): string => {
+  if (userDirectory[userId]) {
+    return userDirectory[userId]
   }
-
-  const getUserInitials = (userId: string): string => {
-    if (userDirectory[userId]) {
-      const parts = userDirectory[userId].split(' ')
-      if (parts.length >= 2) {
-        return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase()
-      }
-      return userDirectory[userId].substring(0, 2).toUpperCase()
-    }
-    if (userId.includes('@')) {
-      const name = userId.split('@')[0]
-      return name.substring(0, 2).toUpperCase()
-    }
-    return userId.substring(0, 2).toUpperCase()
+  if (userId.includes('@')) {
+    const name = userId.split('@')[0]
+    return name.charAt(0).toUpperCase() + name.slice(1)
   }
+  return userId.length > 8 ? `Usuario ${userId.substring(0, 4)}` : `Usuario ${userId}`
+}
 
+const getUserInitials = (userId: string): string => {
+  if (userDirectory[userId]) {
+    const parts = userDirectory[userId].split(' ')
+    if (parts.length >= 2) {
+      return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase()
+    }
+    return userDirectory[userId].substring(0, 2).toUpperCase()
+  }
+  if (userId.includes('@')) {
+    const name = userId.split('@')[0]
+    return name.substring(0, 2).toUpperCase()
+  }
+  return userId.substring(0, 2).toUpperCase()
+}
   return (
     <div className="meeting-container">
       <header className="meeting-header">
