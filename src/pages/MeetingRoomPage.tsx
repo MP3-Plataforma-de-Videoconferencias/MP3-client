@@ -18,7 +18,7 @@ export function MeetingRoomPage(): JSX.Element {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { id } = useParams();
   const currentUserId = getUserIdFromToken();
-  const { remoteStreams, isReady, setMicEnabled, setVideoEnabled } = useWebRTC();
+  const { localStream, remoteStreams, isReady, setMicEnabled, setVideoEnabled } = useWebRTC();
   
   // Obtener el socket del chat para usarlo también en WebRTC
   const { socket: chatSocket } = useSocket(
@@ -168,7 +168,7 @@ export function MeetingRoomPage(): JSX.Element {
                   title={isCurrentUser ? `${displayName} (Tú)` : displayName}
                 >
                   {isCurrentUser ? (
-                    <LocalVideoPlayer displayName={displayName} initials={initials} />
+                    <LocalVideoPlayer displayName={displayName} initials={initials} localStream={localStream} />
                   ) : hasRemoteVideo ? (
                     <RemoteVideoPlayer 
                       stream={remoteStreams[user.socketId]} 
@@ -259,31 +259,32 @@ export function MeetingRoomPage(): JSX.Element {
 }
 
 // Componente para video local
-function LocalVideoPlayer({ displayName, initials }: { displayName: string; initials: string }) {
+function LocalVideoPlayer({ displayName, initials, localStream }: { displayName: string; initials: string; localStream: MediaStream | null }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hasVideo, setHasVideo] = useState(false);
 
   useEffect(() => {
-    const localStream = getLocalMediaStream();
     if (videoRef.current && localStream) {
       videoRef.current.srcObject = localStream;
       const videoTracks = localStream.getVideoTracks();
       setHasVideo(videoTracks.length > 0 && videoTracks.some(t => t.enabled));
+    } else {
+      setHasVideo(false);
     }
-  }, []);
+  }, [localStream]);
 
   return (
     <div className="video-container">
-      {hasVideo ? (
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          className="user-video user-video--local"
-          aria-label={`Video de ${displayName}`}
-        />
-      ) : (
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        className="user-video user-video--local"
+        style={{ display: hasVideo ? 'block' : 'none' }}
+        aria-label={`Video de ${displayName}`}
+      />
+      {!hasVideo && (
         <div className="avatar" aria-hidden="true">
           <div className="avatar-initials avatar-initials--current">
             {initials}

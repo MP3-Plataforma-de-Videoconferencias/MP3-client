@@ -1,4 +1,4 @@
-import Peer from "simple-peer/simplepeer.min.js";
+import Peer from "simple-peer";
 import io from "socket.io-client";
 
 // URLs and credentials for WebRTC and ICE servers
