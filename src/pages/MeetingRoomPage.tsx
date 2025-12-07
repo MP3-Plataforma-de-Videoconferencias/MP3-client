@@ -222,7 +222,7 @@ export function MeetingRoomPage(): JSX.Element {
               const isCurrentUser = user.userId === currentUserId
               const displayName = getUserDisplayName(user.userId)
               const initials = getUserInitials(user.userId)
-              const audioStreamCount = Object.keys(remoteStreams).length
+              // const audioStreamCount = Object.keys(remoteStreams).length
               
               // Obtener el stream de video correspondiente
               // Para el usuario actual, usar localStream
