@@ -200,23 +200,77 @@ async function hangup() {
   try {
     console.log("Finalizando reunión:", meetingCode);
 
+    // 🔥 PRIMERO: Generar resumen con IA
+    console.log("🧠 Generando resumen con IA...");
+    let aiSummary = null;
+    
+    try {
+      // ✅ CORRECCIÓN 1: Usar IA_SERVER_URL, no VITE_API_URL
+      const summaryResponse = await fetch(`${import.meta.env.VITE_IA_SERVER_URL}/summary/${meetingCode}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      });
+
+      if (summaryResponse.ok) {
+        aiSummary = await summaryResponse.json();
+        console.log("✅ Resumen generado por IA:", aiSummary);
+      } else {
+        console.warn("⚠️ No se pudo generar resumen con IA");
+      }
+    } catch (iaError) {
+      console.warn("⚠️ Servidor de IA no disponible:", iaError);
+    }
+
+    // SEGUNDO: Finalizar reunión en backend principal
     await fetch(`${import.meta.env.VITE_API_URL}/api/meetings/finish/${meetingCode}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
     });
 
-    
+    // TERCERO: Guardar resumen generado por IA en colección separada
+    if (aiSummary && aiSummary.resumen) {
+      try {
+        // ✅ CORRECCIÓN 2: Usar ruta /api/ai-summaries (colección separada)
+        await fetch(`${import.meta.env.VITE_API_URL}/ai-summaries`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            meetingId: meetingCode,
+            summary: aiSummary.resumen, // Solo el texto del resumen
+            userId: currentUserId, 
+          })
+        });
+        console.log("✅ Resumen guardado en colección IA");
+      } catch (saveError) {
+        console.error("❌ Error guardando resumen:", saveError);
+      }
+    }
+
+    // CUARTO: Enviar correo a participantes
     await fetch(`${import.meta.env.VITE_API_URL}/api/participants/finish/${meetingCode}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: localStorage.getItem('userEmail') }),
+      body: JSON.stringify({ 
+        email: localStorage.getItem('userEmail'),
+        includeSummary: !!aiSummary,
+        summaryData: aiSummary?.resumen || "" // Solo el texto
+      }),
     });
 
-    console.log("Correo de resumen enviado al participante que finalizó.");
+    console.log("📧 Correo de resumen enviado a participantes");
+
+    // Mostrar mensaje al usuario
+    if (aiSummary?.resumen) {
+      alert(`✅ Reunión finalizada\n\n🧠 Resumen generado con IA:\n${aiSummary.resumen.substring(0, 150)}...`);
+    } else {
+      alert("✅ Reunión finalizada");
+    }
 
     navigate(ROUTES.CREATE_MEETING);
+    
   } catch (err) {
-    console.error("Error al finalizar la reunión:", err);
+    console.error("❌ Error al finalizar la reunión:", err);
+    alert("Error al finalizar la reunión");
   }
 }
 
@@ -632,4 +686,5 @@ function AudioBridge({ peerId, stream }: { peerId: string; stream: MediaStream }
     />
   )
 }
+
 

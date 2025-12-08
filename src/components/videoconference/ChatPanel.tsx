@@ -163,25 +163,57 @@ export function ChatPanel({
     scrollToBottom()
   }, [messages, scrollToBottom])
 
-  const handleSendMessage = useCallback((e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!inputMessage.trim() || !isConnected) {
-      return
-    }
+  const handleSendMessage = useCallback(async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  if (!inputMessage.trim() || !isConnected || !meetingId || !userId) {
+    return;
+  }
 
-    const messageData: MessageData = {
+  const messageData: MessageData = {
+    message: inputMessage.trim(),
+    userId: userId,
+    username: userId ? userNames[userId] : username,
+    timestamp: Date.now(),
+    roomId: meetingId,
+  };
+
+  try {
+    // 1. Enviar mensaje al socket (como ya lo haces)
+    sendMessage(messageData);
+
+    // 2. ENVIAR AL SERVIDOR DE IA - VERSIÓN CORREGIDA
+    const iaPayload = {
+      roomId: meetingId,  
+      user: {             
+        id: userId,
+        name: messageData.username || username
+      },
       message: inputMessage.trim(),
-      userId: userId || undefined,
-      username: userId ? userNames[userId] : username,
-      timestamp: Date.now(),
-      roomId: meetingId,
-    }
+      timestamp: new Date().toISOString()
+    };
 
-    sendMessage(messageData)
-    setInputMessage('')
-  }, [inputMessage, isConnected, userId, username, userNames, meetingId, sendMessage])
+    fetch('http://localhost:4002/chat', { 
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(iaPayload)
+    }).then(response => {
+      if (!response.ok) {
+        console.warn('IA Server respondió con error:', response.status);
+      }
+      return response.json();
+    }).then(data => {
+      console.log('IA procesó mensaje:', data);
+    }).catch(error => {
+      console.warn('No se pudo enviar a IA:', error);
+    });
 
+    setInputMessage('');
+    
+  } catch (error) {
+    console.error('Error enviando mensaje:', error);
+  }
+}, [inputMessage, isConnected, userId, username, userNames, meetingId, sendMessage]);
   return (
     <>
       {/* Overlay para mobile */}
