@@ -36,6 +36,7 @@ export function MeetingRoomPage(): JSX.Element {
   const navigate = useNavigate()
   const [micOn, setMicOn] = useState(true)
   const [camOn, setCamOn] = useState(true)
+  const [videoTracksKey, setVideoTracksKey] = useState(0) // Key para forzar re-render cuando cambian los tracks
 
   useEffect(() => {
     setMicEnabled(micOn)
@@ -43,6 +44,10 @@ export function MeetingRoomPage(): JSX.Element {
 
   useEffect(() => {
     setVideoEnabled(camOn)
+    // Forzar actualización después de un pequeño delay para que el track se active
+    setTimeout(() => {
+      setVideoTracksKey(prev => prev + 1)
+    }, 100)
   }, [camOn, setVideoEnabled])
 
   // Configurar el socket del chat para WebRTC cuando esté disponible
@@ -261,13 +266,20 @@ export function MeetingRoomPage(): JSX.Element {
                 }
               }
               
+              // Verificar si el video está activo (tiene tracks Y al menos uno está habilitado)
+              // Usamos camOn para el usuario actual para forzar re-evaluación cuando cambia el estado de la cámara
+              const hasActiveVideo = videoStream && 
+                videoStream.getVideoTracks().length > 0 && 
+                videoStream.getVideoTracks().some(track => track.enabled) &&
+                (isCurrentUser ? camOn : true) // Para el usuario actual, también verificar el estado de camOn
+              
               return (
                 <div 
                   className={`user-tile ${isCurrentUser ? 'user-tile--current' : ''}`}
                   key={user.socketId}
                   title={isCurrentUser ? `${displayName} (Tú)` : displayName}
                 >
-                  {videoStream && videoStream.getVideoTracks().length > 0 ? (
+                  {hasActiveVideo ? (
                     <VideoPlayer 
                       stream={videoStream} 
                       isLocal={isCurrentUser}
