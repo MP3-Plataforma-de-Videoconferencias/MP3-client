@@ -271,29 +271,23 @@ export function MeetingRoomPage(): JSX.Element {
                     <VideoPlayer 
                       stream={videoStream} 
                       isLocal={isCurrentUser}
-                      displayName={displayName}
+                      displayName={isCurrentUser ? `${displayName} (Tú)` : displayName}
                     />
                   ) : (
-                    <div className="avatar" aria-hidden="true">
-                      {isCurrentUser ? (
-                        <div className="avatar-initials avatar-initials--current">
-                          {initials}
-                        </div>
-                      ) : (
-                        <div className="avatar-initials">
-                          {initials}
-                        </div>
-                      )}
+                    <div className="avatar-container">
+                      <div className="avatar" aria-hidden="true">
+                        {isCurrentUser ? (
+                          <div className="avatar-initials avatar-initials--current">
+                            {initials}
+                          </div>
+                        ) : (
+                          <div className="avatar-initials">
+                            {initials}
+                          </div>
+                        )}
+                      </div>
+                      <span className="user-name">{isCurrentUser ? `${displayName} (Tú)` : displayName}</span>
                     </div>
-                  )}
-                  <span>{isCurrentUser ? `${displayName} (Tú)` : displayName}</span>
-                  {isCurrentUser && (
-                    <span className="user-badge" aria-label="Usuario actual">Tú</span>
-                  )}
-                  {!isCurrentUser && audioStreamCount > 0 && (
-                    <span className="audio-indicator" title="Audio activo" aria-label="Audio activo">
-                      (Audio activo)
-                    </span>
                   )}
                 </div>
               )
@@ -387,19 +381,18 @@ function VideoPlayer({ stream, isLocal, displayName }: { stream: MediaStream; is
   }, [stream, isLocal])
 
   return (
-    <video
-      ref={videoRef}
-      autoPlay
-      playsInline
-      className="user-tile__video"
-      style={{
-        width: '100%',
-        height: '100%',
-        objectFit: 'cover',
-        borderRadius: '8px',
-      }}
-      aria-label={`Video de ${displayName}`}
-    />
+    <div className="video-container">
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        className="user-tile__video"
+        aria-label={`Video de ${displayName}`}
+      />
+      <div className="video-name-overlay">
+        {displayName}
+      </div>
+    </div>
   )
 }
 
