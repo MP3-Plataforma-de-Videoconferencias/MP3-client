@@ -36,7 +36,6 @@ export function MeetingRoomPage(): JSX.Element {
   const navigate = useNavigate()
   const [micOn, setMicOn] = useState(true)
   const [camOn, setCamOn] = useState(true)
-  const [videoTracksKey, setVideoTracksKey] = useState(0) // Key para forzar re-render cuando cambian los tracks
 
   useEffect(() => {
     setMicEnabled(micOn)
@@ -44,10 +43,6 @@ export function MeetingRoomPage(): JSX.Element {
 
   useEffect(() => {
     setVideoEnabled(camOn)
-    // Forzar actualización después de un pequeño delay para que el track se active
-    setTimeout(() => {
-      setVideoTracksKey(prev => prev + 1)
-    }, 100)
   }, [camOn, setVideoEnabled])
 
   // Configurar el socket del chat para WebRTC cuando esté disponible
@@ -233,7 +228,6 @@ export function MeetingRoomPage(): JSX.Element {
               const isCurrentUser = user.userId === currentUserId
               const displayName = getUserDisplayName(user.userId)
               const initials = getUserInitials(user.userId)
-              const audioStreamCount = Object.keys(remoteStreams).length
               
               // Obtener el stream de video correspondiente
               // Para el usuario actual, usar localStream
@@ -266,42 +260,15 @@ export function MeetingRoomPage(): JSX.Element {
                 }
               }
               
-              // Verificar si el video está activo (tiene tracks Y al menos uno está habilitado)
-              // Usamos camOn para el usuario actual para forzar re-evaluación cuando cambia el estado de la cámara
-              const hasActiveVideo = videoStream && 
-                videoStream.getVideoTracks().length > 0 && 
-                videoStream.getVideoTracks().some(track => track.enabled) &&
-                (isCurrentUser ? camOn : true) // Para el usuario actual, también verificar el estado de camOn
-              
               return (
-                <div 
-                  className={`user-tile ${isCurrentUser ? 'user-tile--current' : ''}`}
+                <VideoTile
                   key={user.socketId}
-                  title={isCurrentUser ? `${displayName} (Tú)` : displayName}
-                >
-                  {hasActiveVideo ? (
-                    <VideoPlayer 
-                      stream={videoStream} 
-                      isLocal={isCurrentUser}
-                      displayName={isCurrentUser ? `${displayName} (Tú)` : displayName}
-                    />
-                  ) : (
-                    <div className="avatar-container">
-                      <div className="avatar" aria-hidden="true">
-                        {isCurrentUser ? (
-                          <div className="avatar-initials avatar-initials--current">
-                            {initials}
-                          </div>
-                        ) : (
-                          <div className="avatar-initials">
-                            {initials}
-                          </div>
-                        )}
-                      </div>
-                      <span className="user-name">{isCurrentUser ? `${displayName} (Tú)` : displayName}</span>
-                    </div>
-                  )}
-                </div>
+                  stream={videoStream}
+                  isCurrentUser={isCurrentUser}
+                  displayName={isCurrentUser ? `${displayName} (Tú)` : displayName}
+                  initials={initials}
+                  camOn={camOn}
+                />
               )
             })
           )}
@@ -366,6 +333,128 @@ export function MeetingRoomPage(): JSX.Element {
       </footer>
     </div>
   );
+}
+
+function VideoTile({
+  stream,
+  isCurrentUser,
+  displayName,
+  initials,
+  camOn
+}: {
+  stream: MediaStream | null;
+  isCurrentUser: boolean;
+  displayName: string;
+  initials: string;
+  camOn: boolean;
+}) {
+  const [showVideo, setShowVideo] = useState(false)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+
+  useEffect(() => {
+    if (!stream) {
+      setShowVideo(false)
+      return
+    }
+
+    // Para el usuario actual, usar directamente el estado camOn
+    if (isCurrentUser) {
+      setShowVideo(camOn)
+      return
+    }
+
+    // Para usuarios remotos: detectar si el video tiene contenido
+    const video = videoRef.current
+    if (!video) return
+
+    let animationFrameId: number
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
+
+    const checkVideoContent = () => {
+      if (!video || !ctx || video.readyState < 2) {
+        animationFrameId = requestAnimationFrame(checkVideoContent)
+        return
+      }
+
+      canvas.width = video.videoWidth || 32
+      canvas.height = video.videoHeight || 32
+
+      try {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+        const data = imageData.data
+
+        // Verificar si hay algún pixel que no sea negro
+        let hasContent = false
+        for (let i = 0; i < data.length; i += 4) {
+          // Si encuentra un pixel que no sea completamente negro
+          if (data[i] > 10 || data[i + 1] > 10 || data[i + 2] > 10) {
+            hasContent = true
+            break
+          }
+        }
+
+        setShowVideo(hasContent)
+      } catch (e) {
+        // Si falla, asumir que no hay contenido
+        setShowVideo(false)
+      }
+
+      // Verificar cada 500ms
+      setTimeout(() => {
+        animationFrameId = requestAnimationFrame(checkVideoContent)
+      }, 500)
+    }
+
+    video.srcObject = stream
+    video.muted = true
+    video.playsInline = true
+    video.play().catch(() => {})
+
+    animationFrameId = requestAnimationFrame(checkVideoContent)
+
+    return () => {
+      cancelAnimationFrame(animationFrameId)
+      if (video) {
+        video.srcObject = null
+      }
+    }
+  }, [stream, isCurrentUser, camOn])
+
+  return (
+    <div
+      className={`user-tile ${isCurrentUser ? 'user-tile--current' : ''}`}
+      title={displayName}
+    >
+      {showVideo && stream ? (
+        <VideoPlayer
+          stream={stream}
+          isLocal={isCurrentUser}
+          displayName={displayName}
+        />
+      ) : (
+        <div className="avatar-container">
+          <div className="avatar" aria-hidden="true">
+            <div className={`avatar-initials ${isCurrentUser ? 'avatar-initials--current' : ''}`}>
+              {initials}
+            </div>
+          </div>
+          <span className="user-name">{displayName}</span>
+        </div>
+      )}
+      {/* Video oculto para usuarios remotos (para análisis de contenido) */}
+      {!isCurrentUser && stream && (
+        <video
+          ref={videoRef}
+          style={{ display: 'none' }}
+          autoPlay
+          playsInline
+          muted
+        />
+      )}
+    </div>
+  )
 }
 
 function VideoPlayer({ stream, isLocal, displayName }: { stream: MediaStream; isLocal: boolean; displayName: string }) {
