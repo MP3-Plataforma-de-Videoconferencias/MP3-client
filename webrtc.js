@@ -182,9 +182,35 @@ export function destroyWebRTC() {
 async function getMedia() {
   try {
     // Audio y video para videoconferencia completa
-    return await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+    
+    // Verificar que se obtuvieron los tracks correctamente
+    const audioTracks = stream.getAudioTracks();
+    const videoTracks = stream.getVideoTracks();
+    
+    console.log(`[WebRTC Debug] Media stream obtained:`, {
+      streamId: stream.id,
+      audioTracks: audioTracks.length,
+      videoTracks: videoTracks.length,
+      audioEnabled: audioTracks.length > 0 ? audioTracks[0].enabled : false,
+      audioLabel: audioTracks.length > 0 ? audioTracks[0].label : 'none',
+      videoEnabled: videoTracks.length > 0 ? videoTracks[0].enabled : false,
+      videoLabel: videoTracks.length > 0 ? videoTracks[0].label : 'none'
+    });
+    
+    // Verificar que el audio esté habilitado
+    if (audioTracks.length === 0) {
+      console.warn("[WebRTC Debug] WARNING: No audio tracks obtained! Check microphone permissions.");
+    }
+    
+    return stream;
   } catch (err) {
     console.error("Failed to get user media:", err);
+    console.error("Error details:", {
+      name: err.name,
+      message: err.message,
+      constraint: err.constraint
+    });
     throw err;
   }
 }
@@ -338,21 +364,14 @@ async function handleIntroduction(otherClientIds) {
 
 /**
  * Handles the new user connected event.
+ * Los usuarios existentes NO crean la conexión aquí.
+ * Esperan a recibir la oferta del nuevo usuario (que viene como initiator: true)
+ * y la conexión se creará en handleSignal cuando llegue la oferta.
  * @param {string} theirId - The ID of the newly connected user.
  */
 async function handleNewUserConnected(theirId) {
-  console.log(`[WebRTC Debug] Handling new user connected: ${theirId}`);
-
-  if (theirId !== socket.id && !(theirId in peers)) {
-    console.log(`[WebRTC Debug] Creating peer connection to ${theirId} (initiator: false)`);
-
-    try {
-      const pc = await createPeerConnection(theirId, false);
-      peers[theirId] = { peerConnection: pc };
-    } catch (error) {
-      console.error(`[WebRTC Debug] Error creating peer connection for new user:`, error);
-    }
-  }
+  console.log(`[WebRTC Debug] New user connected: ${theirId}, waiting for their offer...`);
+  // No hacemos nada aquí. La conexión se creará cuando recibamos su señal de oferta.
 }
 
 
