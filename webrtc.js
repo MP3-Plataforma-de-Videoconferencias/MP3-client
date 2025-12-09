@@ -313,7 +313,7 @@ function setupSocketListeners(socketInstance) {
  * Handles the introduction event.
  * @param {Array<string>} otherClientIds - Array of other client IDs.
  */
-function handleIntroduction(otherClientIds) {
+async function handleIntroduction(otherClientIds) {
   console.log(`[WebRTC Debug] Handling introduction, creating peer connections...`);
 
   if (!otherClientIds || !Array.isArray(otherClientIds)) {
@@ -321,7 +321,7 @@ function handleIntroduction(otherClientIds) {
     return;
   }
 
-  otherClientIds.forEach(async (theirId) => {
+  for (const theirId of otherClientIds) {
     if (theirId !== socket.id && !(theirId in peers)) {
       console.log(`[WebRTC Debug] Creating peer connection to ${theirId} (initiator: true)`);
 
@@ -332,7 +332,7 @@ function handleIntroduction(otherClientIds) {
         console.error(`[WebRTC Debug] Error creating peer connection to ${theirId}:`, error);
       }
     }
-  });
+  }
 }
 
 
@@ -373,7 +373,7 @@ function handleUserDisconnected(_id) {
  * @param {string} from - The ID of the sending user.
  * @param {any} data - The signal data.
  */
-function handleSignal(to, from, data) {
+async function handleSignal(to, from, data) {
   if (to !== socket.id) {
     console.log(`[WebRTC Debug] Signal not for us (to: ${to}, our id: ${socket.id})`);
     return;
@@ -381,18 +381,20 @@ function handleSignal(to, from, data) {
 
   console.log(`[WebRTC Debug] Processing signal from ${from}, type: ${data.type || 'unknown'}`);
   let peer = peers[from];
+  
   if (peer && peer.peerConnection) {
     console.log(`[WebRTC Debug] Existing peer connection found, signaling...`);
     peer.peerConnection.signal(data);
   } else {
-    console.log(`[WebRTC Debug] No peer connection found, creating new one...`);
-    createPeerConnection(from, false).then(pc => {
+    console.log(`[WebRTC Debug] No peer connection found for ${from}, creating as non-initiator...`);
+    try {
+      const pc = await createPeerConnection(from, false);
       peers[from] = { peerConnection: pc };
       console.log(`[WebRTC Debug] Signaling new peer connection...`);
       pc.signal(data);
-    }).catch(error => {
+    } catch (error) {
       console.error(`[WebRTC Debug] Error creating peer connection for signal:`, error);
-    });
+    }
   }
 }
 
@@ -417,6 +419,7 @@ async function createPeerConnection(theirSocketId, isInitiator = false) {
   const peerConnection = new Peer({
     initiator: isInitiator,
     trickle: true,
+    stream: localMediaStream,  
     config: { iceServers: iceConfig.iceServers }
   });
 
@@ -432,10 +435,9 @@ async function createPeerConnection(theirSocketId, isInitiator = false) {
     socket.emit("signal", theirSocketId, socket.id, data);
   });
 
-  // 👉 Agregar stream cuando la conexión se establezca
+  // 👉 Cuando la conexión se establezca
   peerConnection.on("connect", () => {
-    console.log(`[WebRTC Debug] Peer connection established with ${theirSocketId}, adding stream...`);
-    peerConnection.addStream(localMediaStream);
+    console.log(`[WebRTC Debug] Peer connection established with ${theirSocketId}`);
   });
 
   // 👉 Cuando llegue un stream REMOTO
