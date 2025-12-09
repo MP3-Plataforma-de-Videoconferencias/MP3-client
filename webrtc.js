@@ -56,7 +56,19 @@ export function getRemoteStreams() {
   return { ...remoteStreams };
 }
 
-
+/**
+ * Joins a WebRTC room to enable peer discovery
+ * @param {string} roomId - The room ID to join
+ */
+export function joinWebRTCRoom(roomId) {
+  if (!socket || !socket.connected) {
+    console.warn(`[WebRTC Debug] Cannot join room ${roomId}: socket not connected`);
+    return;
+  }
+  
+  console.log(`[WebRTC Debug] Joining WebRTC room: ${roomId}`);
+  socket.emit("join-room", roomId);
+}
 
 /**
  * Gets the current socket ID
@@ -247,10 +259,6 @@ function setupSocketListeners(socketInstance) {
 
   socketInstance.on("connect", () => {
     console.log(`[WebRTC Debug] Signaling socket connected: ${socketInstance.id}`);
-    // Emitir evento para registrarse en el servidor de señalización
-    // El servidor debería responder con 'introduction' o 'newUserConnected'
-    
-    console.log(`[WebRTC Debug] Emitted 'register' event`);
   });
 
   socketInstance.on("connect_error", (error) => {
@@ -412,15 +420,7 @@ async function createPeerConnection(theirSocketId, isInitiator = false) {
     config: { iceServers: iceConfig.iceServers }
   });
 
-  console.log(`[WebRTC Debug] Peer connection created, adding local tracks...`);
-  // 👉 Agregar las pistas LOCALES SIEMPRE antes de la negociación
-  localMediaStream.getTracks().forEach(track => {
-    console.log(`[WebRTC Debug] Adding local track: ${track.kind}, enabled: ${track.enabled}`);
-    peerConnection.addTrack(track, localMediaStream);
-  });
-
   // 👉 Enviar señales al otro usuario
-  // 👉 Enviar señales al otro usuario (solo un canal)
   peerConnection.on("signal", (data) => {
     console.log(`[WebRTC Debug] Sending signal to ${theirSocketId}:`, {
       type: data.type || 'signal',
@@ -432,20 +432,21 @@ async function createPeerConnection(theirSocketId, isInitiator = false) {
     socket.emit("signal", theirSocketId, socket.id, data);
   });
 
-
-  // 👉 Cuando llegue una pista REMOTA
-  peerConnection.on("track", (track, stream) => {
-    console.log(`[WebRTC Debug] Received remote track from ${theirSocketId}:`, {
-      kind: track.kind,
-      enabled: track.enabled,
-      streamId: stream.id,
-      streamActive: stream.active
-    });
-    updateRemoteStream(theirSocketId, stream);
+  // 👉 Agregar stream cuando la conexión se establezca
+  peerConnection.on("connect", () => {
+    console.log(`[WebRTC Debug] Peer connection established with ${theirSocketId}, adding stream...`);
+    peerConnection.addStream(localMediaStream);
   });
 
-  peerConnection.on("connect", () => {
-    console.log(`[WebRTC Debug] Peer connection established with ${theirSocketId}`);
+  // 👉 Cuando llegue un stream REMOTO
+  peerConnection.on("stream", (stream) => {
+    console.log(`[WebRTC Debug] Received remote stream from ${theirSocketId}:`, {
+      id: stream.id,
+      active: stream.active,
+      audioTracks: stream.getAudioTracks().length,
+      videoTracks: stream.getVideoTracks().length
+    });
+    updateRemoteStream(theirSocketId, stream);
   });
 
   peerConnection.on("error", (error) => {

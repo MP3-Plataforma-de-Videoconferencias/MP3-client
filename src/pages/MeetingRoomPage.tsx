@@ -18,7 +18,7 @@ export function MeetingRoomPage(): JSX.Element {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { id } = useParams();
   const currentUserId = getUserIdFromToken();
-  const { localStream, remoteStreams, isReady, setMicEnabled, setVideoEnabled } = useWebRTC();
+  const { localStream, remoteStreams, isReady, setMicEnabled, setVideoEnabled, joinRoom } = useWebRTC();
   
   // Obtener el socket del chat para usarlo también en WebRTC
   const { socket: chatSocket } = useSocket(
@@ -50,8 +50,14 @@ export function MeetingRoomPage(): JSX.Element {
     if (chatSocket && chatSocket.connected) {
       console.log('[MeetingRoom Debug] Setting chat socket for WebRTC signaling:', chatSocket.id);
       setExternalSocket(chatSocket);
+      
+      // Unirse a la sala de WebRTC una vez que el socket esté configurado
+      if (meetingCode) {
+        console.log('[MeetingRoom Debug] Joining WebRTC room:', meetingCode);
+        joinRoom(meetingCode);
+      }
     }
-  }, [chatSocket]);
+  }, [chatSocket, meetingCode, joinRoom]);
 
   // Crear un mapeo de usuarios a streams remotos
   // Esto asegura que cada usuario se mapee correctamente con su stream

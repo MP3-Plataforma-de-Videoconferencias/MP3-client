@@ -8,6 +8,7 @@ import {
   enableOutgoingVideo,
   onRemoteStreamsChange,
   onLocalStreamChange,
+  joinWebRTCRoom,
 } from '../../webrtc.js'
 
 type RemoteStreams = Record<string, MediaStream>
@@ -76,6 +77,10 @@ export function useWebRTC(options: UseWebRTCOptions = {}) {
     setIsReady(false)
   }, [])
 
+  const joinRoom = useCallback((roomId: string) => {
+    joinWebRTCRoom(roomId)
+  }, [])
+
   return {
     localStream,
     remoteStreams,
@@ -83,6 +88,7 @@ export function useWebRTC(options: UseWebRTCOptions = {}) {
     setMicEnabled,
     setVideoEnabled,
     endCall,
+    joinRoom,
   }
 }
 
