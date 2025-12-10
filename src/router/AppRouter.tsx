@@ -9,6 +9,7 @@ import { ProfilePage } from '@pages/ProfilePage'
 import { ResetPasswordPage } from '@pages/ResetPasswordPage'
 import { CreateMeetingPage } from '@pages/CreateMeetingPage'
 import { MeetingRoomPage } from '@/pages/MeetingRoomPage'
+import { UserManual } from '@pages/UserManual'
 import { MainLayout } from '@components/layout/MainLayout'
 
 /**
@@ -23,6 +24,7 @@ export function AppRouter(): JSX.Element {
         <Route index element={<HomePage />} />
         <Route path="about" element={<AboutPage />} />
         <Route path="site-map" element={<SiteMapPage />} />
+        <Route path="user-manual" element={<UserManual />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="reset-password" element={<ResetPasswordPage />} />

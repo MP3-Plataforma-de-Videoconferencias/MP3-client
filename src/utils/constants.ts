@@ -11,6 +11,7 @@ export const ROUTES = {
   PROFILE: '/profile',
   CREATE_MEETING: '/meetings/create',
   MEETING: (id: string) => `/meetings/${id}`,
+  USER_MANUAL: '/user-manual',
 } as const
 
 /**

@@ -37,6 +37,9 @@ export function Footer(): JSX.Element {
           <Link className="hover:underline" to={ROUTES.SITE_MAP}>
             Mapa del sitio
           </Link>
+          <Link className="hover:underline" to={ROUTES.USER_MANUAL}>
+            Manual de Usuario
+          </Link>
         </div>
       </div>
     </footer>
