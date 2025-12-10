@@ -330,7 +330,7 @@ export function MeetingRoomPage(): JSX.Element {
           </button>
         )}
 
-        <button aria-label="Colgar" onClick={hangup}>
+        <button aria-label="EndCall" onClick={hangup} title="Colgar">
           <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true">
             <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.11-.21c1.21.48 2.53.74 3.89.74a1 1 0 011 1V22a1 1 0 01-1 1C10.07 23 2 14.93 2 4.5A1 1 0 013 3.5H6.5a1 1 0 011 1c0 1.36.26 2.68.74 3.89a1 1 0 01-.21 1.11l-2.2 2.2z" />
           </svg>
@@ -431,8 +431,6 @@ function VideoTile({
     <div
       className={`user-tile ${isCurrentUser ? 'user-tile--current' : ''}`}
       title={displayName}
-      role="group"
-      aria-label={`Participante ${displayName}`}
     >
       {showVideo && stream ? (
         <VideoPlayer
@@ -442,7 +440,7 @@ function VideoTile({
         />
       ) : (
         <div className="avatar-container">
-          <div className="avatar" role="img" aria-label={`Avatar de ${displayName}`}>
+          <div className="avatar" aria-hidden="true">
             <div className={`avatar-initials ${isCurrentUser ? 'avatar-initials--current' : ''}`}>
               {initials}
             </div>
@@ -458,8 +456,6 @@ function VideoTile({
           autoPlay
           playsInline
           muted
-          aria-hidden="true"
-          aria-label={`Video de ${displayName}`}
         />
       )}
     </div>
@@ -527,7 +523,7 @@ function RemoteAudioPlayers({ streams }: { streams: Record<string, MediaStream> 
   }
 
   return (
-    <div className="audio-bridge" aria-hidden="true" role="region" aria-label="Audio de participantes remotos">
+    <div className="audio-bridge" aria-hidden="true">
       {entries.map(([peerId, stream]) => (
         <AudioBridge key={peerId} peerId={peerId} stream={stream} />
       ))}
@@ -628,4 +624,3 @@ function AudioBridge({ peerId, stream }: { peerId: string; stream: MediaStream }
     />
   )
 }
-
