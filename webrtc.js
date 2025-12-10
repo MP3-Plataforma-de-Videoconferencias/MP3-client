@@ -56,7 +56,19 @@ export function getRemoteStreams() {
   return { ...remoteStreams };
 }
 
-
+/**
+ * Joins a WebRTC room to enable peer discovery
+ * @param {string} roomId - The room ID to join
+ */
+export function joinWebRTCRoom(roomId) {
+  if (!socket || !socket.connected) {
+    console.warn(`[WebRTC Debug] Cannot join room ${roomId}: socket not connected`);
+    return;
+  }
+  
+  console.log(`[WebRTC Debug] Joining WebRTC room: ${roomId}`);
+  socket.emit("join-room", roomId);
+}
 
 /**
  * Gets the current socket ID
@@ -162,18 +174,43 @@ export function destroyWebRTC() {
 
 /**
  * Gets the user's media stream.
- * Para este proyecto solo necesitamos AUDIO, por lo que
- * pedimos únicamente audio y evitamos depender de la cámara.
+ * Solicita audio y video para videoconferencia completa.
  * @async
  * @function getMedia
  * @returns {Promise<MediaStream>} The user's media stream.
  */
 async function getMedia() {
   try {
-    // Solo audio: evita errores cuando la cámara no está disponible
-    return await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    // Audio y video para videoconferencia completa
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+    
+    // Verificar que se obtuvieron los tracks correctamente
+    const audioTracks = stream.getAudioTracks();
+    const videoTracks = stream.getVideoTracks();
+    
+    console.log(`[WebRTC Debug] Media stream obtained:`, {
+      streamId: stream.id,
+      audioTracks: audioTracks.length,
+      videoTracks: videoTracks.length,
+      audioEnabled: audioTracks.length > 0 ? audioTracks[0].enabled : false,
+      audioLabel: audioTracks.length > 0 ? audioTracks[0].label : 'none',
+      videoEnabled: videoTracks.length > 0 ? videoTracks[0].enabled : false,
+      videoLabel: videoTracks.length > 0 ? videoTracks[0].label : 'none'
+    });
+    
+    // Verificar que el audio esté habilitado
+    if (audioTracks.length === 0) {
+      console.warn("[WebRTC Debug] WARNING: No audio tracks obtained! Check microphone permissions.");
+    }
+    
+    return stream;
   } catch (err) {
     console.error("Failed to get user media:", err);
+    console.error("Error details:", {
+      name: err.name,
+      message: err.message,
+      constraint: err.constraint
+    });
     throw err;
   }
 }
@@ -248,10 +285,6 @@ function setupSocketListeners(socketInstance) {
 
   socketInstance.on("connect", () => {
     console.log(`[WebRTC Debug] Signaling socket connected: ${socketInstance.id}`);
-    // Emitir evento para registrarse en el servidor de señalización
-    // El servidor debería responder con 'introduction' o 'newUserConnected'
-    
-    console.log(`[WebRTC Debug] Emitted 'register' event`);
   });
 
   socketInstance.on("connect_error", (error) => {
@@ -421,7 +454,6 @@ async function createPeerConnection(theirSocketId, isInitiator = false) {
   });
 
   // 👉 Enviar señales al otro usuario
-  // 👉 Enviar señales al otro usuario (solo un canal)
   peerConnection.on("signal", (data) => {
     console.log(`[WebRTC Debug] Sending signal to ${theirSocketId}:`, {
       type: data.type || 'signal',
@@ -432,7 +464,6 @@ async function createPeerConnection(theirSocketId, isInitiator = false) {
     });
     socket.emit("signal", theirSocketId, socket.id, data);
   });
-
 
   // 👉 Cuando llegue una pista REMOTA
   peerConnection.on("track", (track, stream) => {
@@ -445,6 +476,7 @@ async function createPeerConnection(theirSocketId, isInitiator = false) {
     updateRemoteStream(theirSocketId, stream);
   });
 
+  // 👉 Cuando la conexión se establezca
   peerConnection.on("connect", () => {
     console.log(`[WebRTC Debug] Peer connection established with ${theirSocketId}`);
   });
