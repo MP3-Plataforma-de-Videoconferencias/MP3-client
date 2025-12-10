@@ -13,4 +13,5 @@ export function getLocalMediaStream(): MediaStream | null
 export function connectToPeer(peerSocketId: string): Promise<void>
 export function getSocketId(): string | null
 export function setExternalSocket(socketInstance: any): void
+export function joinWebRTCRoom(roomId: string): void
 
