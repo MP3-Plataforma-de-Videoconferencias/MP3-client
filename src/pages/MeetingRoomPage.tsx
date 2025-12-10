@@ -200,13 +200,13 @@ export function MeetingRoomPage(): JSX.Element {
   }
 
   return (
-    <div className="meeting-container">
-      <header className="meeting-header">
+    <div className="meeting-container" role="application">
+      <header className="meeting-header" role="banner" aria-live="polite">
         <strong>Código de la reunión:</strong> {meetingCode}
       </header>
 
       <div className="meeting-scroll-area">
-        <main className="meeting-grid">
+        <main className="meeting-grid" role="main" aria-label="Participantes de la reunión">
           {usersOnline.length === 0 ? (
             <div className="user-tile user-tile--empty">
               <div className="avatar" aria-hidden="true">
@@ -277,6 +277,8 @@ export function MeetingRoomPage(): JSX.Element {
         <RemoteAudioPlayers streams={remoteStreams} />
 
         <ChatPanel 
+          aria-label="Chat de la reunión"
+          aria-live="polite"
           meetingId={meetingCode} 
           onUsersOnlineChange={setUsersOnline}
           onUserDirectoryChange={setUserDirectory}
@@ -286,10 +288,11 @@ export function MeetingRoomPage(): JSX.Element {
       </div>
 
       
-      <footer className="meeting-footer">
+      <footer className="meeting-footer" role="contentinfo" aria-label="Controles de la reunión">
         <button
-          aria-label="Mic"
+          aria-label={micOn ? "Desactivar micrófono" : "Activar micrófono"}
           aria-pressed={!micOn}
+          role="button"
           onClick={toggleMic}
           className={micOn ? '' : 'off'}
           title={micOn ? 'Silenciar' : 'Activar micrófono'}
@@ -301,8 +304,9 @@ export function MeetingRoomPage(): JSX.Element {
         </button>
 
         <button
-          aria-label="Camera"
+          aria-label={camOn ? "Desactivar cámara" : "Activar cámara"}
           aria-pressed={!camOn}
+          role="button"
           onClick={toggleCam}
           className={camOn ? '' : 'off'}
           title={camOn ? 'Apagar cámara' : 'Encender cámara'}
@@ -314,7 +318,8 @@ export function MeetingRoomPage(): JSX.Element {
 
         {window.innerWidth < 1024 && (
           <button 
-            aria-label="Chat"
+            aria-label={isChatOpen ? "Cerrar chat" : "Abrir chat"}
+            aria-pressed={isChatOpen}
             onClick={() => setIsChatOpen(!isChatOpen)}
             className={isChatOpen ? 'active' : ''}
             title={isChatOpen ? 'Cerrar chat' : 'Abrir chat'}
@@ -619,4 +624,3 @@ function AudioBridge({ peerId, stream }: { peerId: string; stream: MediaStream }
     />
   )
 }
-
