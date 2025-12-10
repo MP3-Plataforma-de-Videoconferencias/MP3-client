@@ -133,7 +133,7 @@ export function UserManual(): JSX.Element {
             </p>
             <div className="bg-blue-50 border-l-4 border-blue-400 p-4 my-4">
               <p className="text-sm text-blue-800">
-                <strong>💡 Consejo:</strong> Te recomendamos leer este manual completo antes de usar 
+                <strong> Consejo:</strong> Te recomendamos leer este manual completo antes de usar 
                 la plataforma por primera vez para familiarizarte con todas las opciones disponibles.
               </p>
             </div>
