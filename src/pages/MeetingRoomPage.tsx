@@ -200,13 +200,13 @@ export function MeetingRoomPage(): JSX.Element {
   }
 
   return (
-    <div className="meeting-container">
-      <header className="meeting-header">
+    <div className="meeting-container" role="application">
+      <header className="meeting-header" role="banner" aria-live="polite">
         <strong>Código de la reunión:</strong> {meetingCode}
       </header>
 
       <div className="meeting-scroll-area">
-        <main className="meeting-grid">
+        <main className="meeting-grid" role="main" aria-label="Participantes de la reunión">
           {usersOnline.length === 0 ? (
             <div className="user-tile user-tile--empty">
               <div className="avatar" aria-hidden="true">
@@ -277,6 +277,8 @@ export function MeetingRoomPage(): JSX.Element {
         <RemoteAudioPlayers streams={remoteStreams} />
 
         <ChatPanel 
+          aria-label="Chat de la reunión"
+          aria-live="polite"
           meetingId={meetingCode} 
           onUsersOnlineChange={setUsersOnline}
           onUserDirectoryChange={setUserDirectory}
@@ -286,10 +288,11 @@ export function MeetingRoomPage(): JSX.Element {
       </div>
 
       
-      <footer className="meeting-footer">
+      <footer className="meeting-footer" role="contentinfo" aria-label="Controles de la reunión">
         <button
-          aria-label="Mic"
+          aria-label={micOn ? "Desactivar micrófono" : "Activar micrófono"}
           aria-pressed={!micOn}
+          role="button"
           onClick={toggleMic}
           className={micOn ? '' : 'off'}
           title={micOn ? 'Silenciar' : 'Activar micrófono'}
@@ -301,8 +304,9 @@ export function MeetingRoomPage(): JSX.Element {
         </button>
 
         <button
-          aria-label="Camera"
+          aria-label={camOn ? "Desactivar cámara" : "Activar cámara"}
           aria-pressed={!camOn}
+          role="button"
           onClick={toggleCam}
           className={camOn ? '' : 'off'}
           title={camOn ? 'Apagar cámara' : 'Encender cámara'}
@@ -314,7 +318,8 @@ export function MeetingRoomPage(): JSX.Element {
 
         {window.innerWidth < 1024 && (
           <button 
-            aria-label="Chat"
+            aria-label={isChatOpen ? "Cerrar chat" : "Abrir chat"}
+            aria-pressed={isChatOpen}
             onClick={() => setIsChatOpen(!isChatOpen)}
             className={isChatOpen ? 'active' : ''}
             title={isChatOpen ? 'Cerrar chat' : 'Abrir chat'}
@@ -325,7 +330,7 @@ export function MeetingRoomPage(): JSX.Element {
           </button>
         )}
 
-        <button aria-label="EndCall" onClick={hangup} title="Colgar">
+        <button aria-label="Colgar" onClick={hangup}>
           <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true">
             <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.11-.21c1.21.48 2.53.74 3.89.74a1 1 0 011 1V22a1 1 0 01-1 1C10.07 23 2 14.93 2 4.5A1 1 0 013 3.5H6.5a1 1 0 011 1c0 1.36.26 2.68.74 3.89a1 1 0 01-.21 1.11l-2.2 2.2z" />
           </svg>
@@ -426,6 +431,8 @@ function VideoTile({
     <div
       className={`user-tile ${isCurrentUser ? 'user-tile--current' : ''}`}
       title={displayName}
+      role="group"
+      aria-label={`Participante ${displayName}`}
     >
       {showVideo && stream ? (
         <VideoPlayer
@@ -435,7 +442,7 @@ function VideoTile({
         />
       ) : (
         <div className="avatar-container">
-          <div className="avatar" aria-hidden="true">
+          <div className="avatar" role="img" aria-label={`Avatar de ${displayName}`}>
             <div className={`avatar-initials ${isCurrentUser ? 'avatar-initials--current' : ''}`}>
               {initials}
             </div>
@@ -451,6 +458,8 @@ function VideoTile({
           autoPlay
           playsInline
           muted
+          aria-hidden="true"
+          aria-label={`Video de ${displayName}`}
         />
       )}
     </div>
@@ -518,7 +527,7 @@ function RemoteAudioPlayers({ streams }: { streams: Record<string, MediaStream> 
   }
 
   return (
-    <div className="audio-bridge" aria-hidden="true">
+    <div className="audio-bridge" aria-hidden="true" role="region" aria-label="Audio de participantes remotos">
       {entries.map(([peerId, stream]) => (
         <AudioBridge key={peerId} peerId={peerId} stream={stream} />
       ))}

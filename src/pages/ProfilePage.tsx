@@ -328,7 +328,6 @@ export function ProfilePage(): JSX.Element {
         type="button"
         onClick={() => setShowPasswordModal(true)}
         className="w-full py-2 text-blue-600 hover:underline text-sm mt-4"
-        aria-label="Botón para cambiar contraseña"
       >
         Cambiar contraseña
       </button>
@@ -345,7 +344,6 @@ export function ProfilePage(): JSX.Element {
         <button
           onClick={() => setShowDeleteModal(true)}
           className="w-full py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-50 transition"
-          aria-label="Botón para eliminar cuenta"
         >
           Eliminar cuenta
         </button>
@@ -356,9 +354,9 @@ export function ProfilePage(): JSX.Element {
 
         {/* Delete Confirmation Modal */}
         {showDeleteModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-              <h3 className="text-xl font-semibold mb-4">¿Eliminar cuenta?</h3>
+              <h3 id="delete-modal-title" className="text-xl font-semibold mb-4">¿Eliminar cuenta?</h3>
               <p className="text-gray-600 mb-6">
                 Esta acción es irreversible. Todos tus datos serán eliminados permanentemente.
               </p>
@@ -383,9 +381,9 @@ export function ProfilePage(): JSX.Element {
 
         {/* Change Password Modal */}
         {showPasswordModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="password-modal-title">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-              <h3 className="text-xl font-semibold mb-4">Cambiar contraseña</h3>
+              <h3 id="password-modal-title" className="text-xl font-semibold mb-4">Cambiar contraseña</h3>
               <form onSubmit={handleChangePassword} className="space-y-4">
                 <div>
                   <label htmlFor="newPassword" className="text-sm font-medium block mb-1">
